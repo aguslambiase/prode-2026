@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Prode Mundial 2026</title>
+<style>
+/* ── Reset & base ── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f4f4f0;color:#1a1a18;min-height:100vh;padding:1rem}
+.app{max-width:680px;margin:0 auto}
+
+/* ── Screens ── */
+.screen{display:none;padding:1.5rem 0}
+.screen.active{display:block}
+
+/* ── Cards ── */
+.card{background:#fff;border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:3px;margin-bottom:1.5rem;background:#e8e8e3;border-radius:8px;padding:3px}
+.tab{flex:1;padding:7px 6px;font-size:12px;border:none;background:transparent;border-radius:6px;cursor:pointer;color:#666;font-family:inherit;white-space:nowrap}
+.tab.active{background:#fff;color:#1a1a18;font-weight:500;border:0.5px solid rgba(0,0,0,0.13)}
+
+/* ── Nav ── */
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:0.5px solid rgba(0,0,0,0.1)}
+.nav-user{font-size:14px;font-weight:500}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;font-size:14px;border:0.5px solid rgba(0,0,0,0.2);border-radius:8px;background:transparent;cursor:pointer;font-family:inherit;color:#1a1a18}
+.btn:hover{background:#f0f0ec}
+.btn.primary{background:#1a1a18;color:#fff;border-color:#1a1a18}
+.btn.primary:hover{opacity:.85}
+.btn:disabled{opacity:.4;cursor:default}
+.btn-row{display:flex;gap:10px;margin-top:1.5rem;flex-wrap:wrap}
+
+/* ── Form fields ── */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:6px}
+.field input{width:100%;height:38px;padding:0 12px;font-size:15px;border:0.5px solid rgba(0,0,0,0.2);border-radius:8px;background:#f4f4f0;font-family:inherit;color:#1a1a18}
+
+/* ── Match rows ── */
+.match-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid rgba(0,0,0,0.08)}
+.match-row:last-child{border-bottom:none}
+.teams{flex:1;font-size:14px;font-weight:500}
+.match-date{font-size:11px;color:#aaa}
+.score-input{width:38px;height:32px;text-align:center;font-size:15px;font-weight:500;border:0.5px solid rgba(0,0,0,0.18);border-radius:8px;background:#f4f4f0;color:#1a1a18;font-family:inherit}
+.score-input:disabled{opacity:.5}
+.score-sep{font-size:14px;color:#bbb}
+.locked-badge{font-size:11px;color:#92620a;background:#faeeda;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.open-badge{font-size:11px;color:#3b6d11;background:#eaf3de;padding:3px 8px;border-radius:999px;white-space:nowrap}
+
+/* ── Category rows ── */
+.cat-row{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:0.5px solid rgba(0,0,0,0.08)}
+.cat-row:last-child{border-bottom:none}
+.cat-label{flex:1;min-width:0}
+.cat-name{font-size:14px;font-weight:500}
+.cat-trophy{font-size:11px;color:#aaa;margin-top:2px}
+.cat-rule{font-size:12px;color:#666;margin-top:5px;line-height:1.55;border-left:2px solid rgba(0,0,0,0.12);padding-left:8px}
+.cat-pts{font-size:11px;padding:2px 7px;border-radius:999px;white-space:nowrap;flex-shrink:0}
+.cat-pts.a{background:#e6f1fb;color:#185fa5}
+.cat-pts.b{background:#faeeda;color:#854f0b}
+.cat-input{width:150px;height:32px;font-size:13px;border:0.5px solid rgba(0,0,0,0.18);border-radius:8px;padding:0 10px;background:#f4f4f0;color:#1a1a18;font-family:inherit;flex-shrink:0}
+.cat-input:disabled{opacity:.5}
+.cat-locked-val{font-size:14px;font-weight:500;color:#1a1a18;min-width:120px;text-align:right;flex-shrink:0}
+
+/* ── Table ── */
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{text-align:left;font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.04em;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.1)}
+.tbl td{padding:10px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);color:#1a1a18}
+.tbl tr:last-child td{border-bottom:none}
+.rank{font-weight:500;color:#888;width:24px}
+.gold{color:#B87400}
+.avatar{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;background:#e6f1fb;color:#185fa5;margin-right:8px;vertical-align:middle;flex-shrink:0}
+
+/* ── Badges & banners ── */
+.phase-badge{display:inline-block;font-size:11px;padding:3px 10px;border-radius:999px;margin-bottom:1rem;background:#e6f1fb;color:#185fa5;font-weight:500}
+.lock-banner{background:#faeeda;border:0.5px solid rgba(0,0,0,0.1);border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:#854f0b}
+.section-header{font-size:16px;font-weight:500;margin-bottom:4px}
+.section-sub{font-size:13px;color:#666;margin-bottom:1rem}
+.error-msg{font-size:13px;color:#c0392b;margin-top:8px}
+.save-hint{font-size:12px;color:#3b6d11}
+.delta{font-size:12px;color:#3b6d11;font-weight:500}
+
+/* ── Spy view ── */
+.spy-match-card{background:#fff;border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px}
+.spy-match-header{font-size:15px;font-weight:500;margin-bottom:2px}
+.spy-match-date{font-size:11px;color:#aaa;margin-bottom:12px}
+.spy-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);font-size:13px}
+.spy-row:last-child{border-bottom:none}
+.spy-name{width:82px;font-weight:500;flex-shrink:0}
+.spy-bet{flex:1;font-weight:500;font-size:15px}
+.spy-pending{color:#bbb;font-size:12px;font-style:italic;font-weight:400}
+.spy-cat-card{background:#fff;border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px}
+.spy-cat-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.spy-cat-name{font-size:14px;font-weight:500;flex:1}
+.spy-answers{display:flex;flex-wrap:wrap;gap:6px}
+.spy-answer{display:flex;align-items:center;gap:6px;background:#f4f4f0;border-radius:8px;padding:5px 10px;font-size:13px}
+.spy-answer .sname{color:#888;font-size:11px}
+.spy-answer .sval{color:#1a1a18;font-weight:500}
+
+/* ── Admin ── */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
+.admin-stat{background:#f4f4f0;border-radius:8px;padding:1rem;text-align:center}
+.admin-stat .num{font-size:24px;font-weight:500}
+.admin-stat .lbl{font-size:12px;color:#888;margin-top:2px}
+.confirm-btn{padding:5px 14px;font-size:12px;border:0.5px solid rgba(0,0,0,0.2);border-radius:8px;background:transparent;cursor:pointer;font-family:inherit;color:#1a1a18}
+.confirm-btn.done{background:#eaf3de;color:#3b6d11;border-color:transparent}
+.wc-box{background:#f4f4f0;border-radius:8px;padding:1rem 1.25rem;margin-bottom:12px}
+.wc-leader-txt{font-size:20px;font-weight:500;margin:6px 0 16px}
+.wc-hit-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);font-size:14px}
+.wc-hit-row:last-child{border-bottom:none}
+.wildcard-select{width:100%;height:38px;font-size:14px;border:0.5px solid rgba(0,0,0,0.2);border-radius:8px;padding:0 10px;background:#f4f4f0;color:#1a1a18;font-family:inherit;margin-bottom:12px}
+
+/* ── Loading overlay ── */
+#loading{position:fixed;inset:0;background:rgba(244,244,240,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:100}
+#loading.hidden{display:none}
+.spinner{width:28px;height:28px;border:3px solid rgba(0,0,0,0.12);border-top-color:#1a1a18;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading-msg{font-size:14px;color:#666}
+
+.login-wrap{max-width:320px;margin:2rem auto}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div id="loading-msg">Cargando...</div>
+</div>
+
+<div class="app">
+
+<!-- ══════════════════ LOGIN ══════════════════ -->
+<div id="screen-login" class="screen">
+  <div class="login-wrap">
+    <div style="font-size:22px;font-weight:500;margin-bottom:4px;">Copa del Mundo 2026</div>
+    <div style="font-size:14px;color:#666;margin-bottom:1.5rem;">Prode · Ingresá con tu nombre y PIN</div>
+    <div class="card">
+      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Lomba" autocomplete="off"/></div>
+      <div class="field"><label>PIN</label><input type="password" id="login-pin" placeholder="4 dígitos" maxlength="4"/></div>
+      <button class="btn primary" style="width:100%;justify-content:center" onclick="doLogin()">Entrar</button>
+      <div class="error-msg" id="login-error" style="display:none">Usuario o PIN incorrecto</div>
+    </div>
+    <div style="text-align:center;margin-top:12px"><button class="btn" onclick="showAdminLogin()">Acceso admin →</button></div>
+  </div>
+</div>
+
+<!-- ══════════════════ ADMIN LOGIN ══════════════════ -->
+<div id="screen-admin-login" class="screen">
+  <div class="login-wrap">
+    <div style="font-size:22px;font-weight:500;margin-bottom:4px;">Panel admin</div>
+    <div style="font-size:14px;color:#666;margin-bottom:1.5rem;">Ingresá el PIN de administrador</div>
+    <div class="card">
+      <div class="field"><label>PIN admin</label><input type="password" id="admin-pin-input" placeholder="PIN" maxlength="8"/></div>
+      <button class="btn primary" style="width:100%;justify-content:center" onclick="doAdminLogin()">Entrar como admin</button>
+      <div class="error-msg" id="admin-login-error" style="display:none">PIN incorrecto</div>
+    </div>
+    <div style="text-align:center;margin-top:12px"><button class="btn" onclick="show('screen-login')">← Volver</button></div>
+  </div>
+</div>
+
+<!-- ══════════════════ PLAYER ══════════════════ -->
+<div id="screen-player" class="screen">
+  <div class="nav">
+    <div><div class="nav-user" id="player-name-display">—</div><div style="font-size:12px;color:#aaa">Copa del Mundo 2026</div></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="save-hint" id="save-hint" style="display:none">Guardado ✓</span>
+      <button class="btn" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('grupos')">Mis apuestas</button>
+    <button class="tab" onclick="switchTab('categorias')">Categorías</button>
+    <button class="tab" onclick="switchTab('wildcard')">Wild Card</button>
+    <button class="tab" onclick="switchTab('espia')">Ver apuestas</button>
+    <button class="tab" onclick="switchTab('tabla')">Tabla</button>
+  </div>
+
+  <div id="tab-grupos">
+    <div class="phase-badge">Fase de grupos · Etapa 1</div>
+    <div class="section-header">Mis apuestas</div>
+    <div class="section-sub">Podés editar hasta las 23:59 del día anterior a cada partido. Acertar resultado exacto suma puntos extra.</div>
+    <div class="card"><div class="card-title">Grupo A</div><div id="matches-A"></div></div>
+    <div class="card"><div class="card-title">Grupo B</div><div id="matches-B"></div></div>
+    <div class="card"><div class="card-title">Grupo C</div><div id="matches-C"></div></div>
+    <div class="btn-row"><button class="btn primary" onclick="saveGroups()">Guardar apuestas</button></div>
+  </div>
+
+  <div id="tab-categorias" style="display:none">
+    <div class="section-header">Categorías extra</div>
+    <div id="cats-lock-banner" class="lock-banner" style="display:none">El mundial ya comenzó. Tus categorías están bloqueadas.</div>
+    <div class="section-sub">Se bloquean cuando empieza el mundial. Cat. A = 9 pts · Cat. B = 12 pts</div>
+    <div class="card" id="cats-form"></div>
+    <div class="btn-row" id="cats-save-row"><button class="btn primary" onclick="saveCats()">Guardar categorías</button></div>
+  </div>
+
+  <div id="tab-wildcard" style="display:none">
+    <div class="section-header">Wild Card</div>
+    <div id="wc-lock-banner" class="lock-banner" style="display:none">El mundial ya comenzó. Tu Wild Card está bloqueada.</div>
+    <div class="section-sub">Apostá quién va a ganar el prode. Si acertás, sumás 5 pts extra al final, después de todos los cálculos. Puede voltear la tabla. No vale votarse a uno mismo.</div>
+    <div class="card">
+      <div class="card-title">¿Quién va a ganar el prode?</div>
+      <select class="wildcard-select" id="wc-select"></select>
+      <button class="btn primary" id="wc-save-btn" onclick="saveWC()">Guardar Wild Card</button>
+    </div>
+  </div>
+
+  <div id="tab-espia" style="display:none">
+    <div class="section-header">Apuestas reveladas</div>
+    <div class="section-sub">Solo se muestran apuestas bloqueadas. Categorías y Wild Card se revelan una vez iniciado el mundial.</div>
+    <div id="espia-content"></div>
+  </div>
+
+  <div id="tab-tabla" style="display:none">
+    <div class="section-header">Tabla de posiciones</div>
+    <div class="section-sub">Puntajes sin Wild Card aplicada.</div>
+    <div class="card" id="tabla-content"></div>
+  </div>
+</div>
+
+<!-- ══════════════════ ADMIN ══════════════════ -->
+<div id="screen-admin" class="screen">
+  <div class="nav">
+    <div><div class="nav-user">Panel admin</div><div style="font-size:12px;color:#aaa">Copa del Mundo 2026</div></div>
+    <button class="btn" onclick="doLogout()">Salir</button>
+  </div>
+  <div class="stats-grid">
+    <div class="admin-stat"><div class="num">11</div><div class="lbl">Participantes</div></div>
+    <div class="admin-stat"><div class="num" id="stat-results">0</div><div class="lbl">Resultados</div></div>
+    <div class="admin-stat"><div class="num" id="stat-mundial">—</div><div class="lbl">Mundial</div></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchAdminTab('resultados')">Resultados</button>
+    <button class="tab" onclick="switchAdminTab('categorias')">Categorías</button>
+    <button class="tab" onclick="switchAdminTab('wildcard')">Wild Card</button>
+    <button class="tab" onclick="switchAdminTab('config')">Config</button>
+    <button class="tab" onclick="switchAdminTab('tabla')">Tabla</button>
+  </div>
+
+  <div id="admin-tab-resultados">
+    <div class="section-sub" style="margin-bottom:1rem">Ingresá el resultado real de cada partido.</div>
+    <div class="card" id="admin-results"></div>
+  </div>
+  <div id="admin-tab-categorias" style="display:none">
+    <div class="section-sub" style="margin-bottom:1rem">Cargá el resultado real de cada categoría.</div>
+    <div class="card" id="admin-cats"></div>
+    <div class="btn-row"><button class="btn primary" onclick="recalc()">Recalcular puntajes</button></div>
+  </div>
+  <div id="admin-tab-wildcard" style="display:none">
+    <div class="section-sub" style="margin-bottom:1rem">Paso final. Calculá puntajes, verificá el líder, aplicá +5 a quienes acertaron.</div>
+    <div class="wc-box">
+      <div style="font-size:12px;color:#888">Líder antes de Wild Card</div>
+      <div class="wc-leader-txt" id="wc-leader-name">— calculá primero los puntajes</div>
+      <div style="font-size:13px;color:#888;margin-bottom:8px">Participantes que apostaron a esa persona:</div>
+      <div id="wc-hits-list"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="applyWildCard()">Aplicar Wild Card (+5 pts)</button>
+      <button class="btn" onclick="recalc()">Recalcular sin Wild Card</button>
+    </div>
+  </div>
+  <div id="admin-tab-config" style="display:none">
+    <div class="section-header" style="margin-bottom:8px">Configuración</div>
+    <div class="card">
+      <div class="field">
+        <label>Fecha de inicio del mundial</label>
+        <input type="date" id="mundial-start-input" style="width:200px"/>
+      </div>
+      <button class="btn primary" onclick="saveMundialStart()">Guardar fecha</button>
+      <div style="font-size:12px;color:#3b6d11;margin-top:8px" id="config-saved"></div>
+    </div>
+  </div>
+  <div id="admin-tab-tabla" style="display:none">
+    <div class="card" id="admin-tabla"></div>
+  </div>
+</div>
+
+</div><!-- .app -->
+
+<script>
+// ══════════════════════════════════════════════════
+// CONFIGURACIÓN — reemplazá con tu URL de Apps Script
+// ══════════════════════════════════════════════════
+const API_URL = 'TU_APPS_SCRIPT_URL_AQUI';
+
+// ══════════════════════════════════════════════════
+// DATOS DEL JUEGO
+// ══════════════════════════════════════════════════
+const USERS = ['LOMBA','BETO','JOAQUIN','MAXI','VALEN','RICHARD','MELCHOR','LEA','PAPO','AGUS','GUSA'];
+
+const MATCHES = [
+  {id:'m1',group:'A',home:'Argentina',away:'México',date:'2026-06-14',pts:{base:3,exact:2}},
+  {id:'m2',group:'A',home:'Polonia',away:'Arabia Saudita',date:'2026-06-14',pts:{base:3,exact:2}},
+  {id:'m3',group:'B',home:'Francia',away:'Australia',date:'2026-06-15',pts:{base:3,exact:2}},
+  {id:'m4',group:'B',home:'Dinamarca',away:'Túnez',date:'2026-06-15',pts:{base:3,exact:2}},
+  {id:'m5',group:'C',home:'España',away:'Costa Rica',date:'2026-06-16',pts:{base:3,exact:2}},
+  {id:'m6',group:'C',home:'Alemania',away:'Japón',date:'2026-06-16',pts:{base:3,exact:2}},
+  {id:'m7',group:'A',home:'Argentina',away:'Polonia',date:'2026-06-18',pts:{base:3,exact:2}},
+  {id:'m8',group:'A',home:'México',away:'Arabia Saudita',date:'2026-06-18',pts:{base:3,exact:2}},
+];
+
+const CATEGORIES = [
+  {id:'campeon',name:'Campeón',trophy:null,type:'a',pts:9,rule:'El equipo que gane la Copa del Mundo 2026.'},
+  {id:'goleador',name:'Goleador',trophy:'Trofeo Erling Haaland',type:'b',pts:12,rule:'El jugador que más goles convierta. En caso de empate, se considera al que haya jugado menos minutos.'},
+  {id:'balon',name:'Balón de Oro',trophy:null,type:'b',pts:12,rule:'El jugador elegido como mejor del torneo según el premio oficial de la FIFA.'},
+  {id:'goles_messi',name:'Goles de Messi',trophy:'Trofeo Mateo Messi',type:'a',pts:9,rule:'Cantidad exacta de goles que convertirá Messi. Todo o nada: hay que acertar el número exacto.'},
+  {id:'primer_gol',name:'Primer jugador en hacer un gol',trophy:null,type:'b',pts:12,rule:'El jugador que convierta el primer gol del torneo. Si es gol en contra, no cuenta y se pasa al siguiente.'},
+  {id:'primer_expulsado',name:'Primer equipo en tener un expulsado',trophy:'Trofeo Carlos Sanchez',type:'a',pts:9,rule:'El primer equipo cuyo jugador reciba tarjeta roja (directa o doble amarilla).'},
+  {id:'expulsados_uru',name:'Cantidad de expulsados uruguayos',trophy:'Trofeo Carlos Sanchez',type:'a',pts:9,rule:'Número exacto de tarjetas rojas recibidas por jugadores de Uruguay en todo el torneo. Todo o nada.'},
+  {id:'primer_eliminado',name:'Primer eliminado',trophy:'Trofeo Marcelo Bielsa',type:'a',pts:9,rule:'El primer seleccionado en quedar matemáticamente eliminado del torneo.'},
+  {id:'primer_gol_arg',name:'Primer gol argentino',trophy:'Trofeo Kolasinac en contra',type:'a',pts:9,rule:'El primer jugador de Argentina en convertir un gol a favor del equipo. Goles en contra del rival no cuentan.'},
+  {id:'revelacion',name:'Revelación',trophy:'Trofeo Enrico Andrea Lombardo',type:'a',pts:9,rule:'Equipo que nunca haya jugado una final del mundo ni sea cabeza de serie, y termine más alto en la tabla definitiva de la FIFA.'},
+  {id:'goles_en_contra',name:'N° total de goles en contra',trophy:'Trofeo Andrés Escobar',type:'a',pts:9,rule:'Cantidad exacta de goles en contra registrados en todo el torneo. Todo o nada.'},
+  {id:'arbitro_final',name:'Árbitro que dirige la final',trophy:'Trofeo Horacio Elizondo',type:'b',pts:12,rule:'El árbitro principal designado por la FIFA para dirigir el partido final.'},
+  {id:'penal_var',name:'Primer equipo en gozar de un penal por VAR',trophy:null,type:'a',pts:9,rule:'El primer equipo que patee un penal cobrado exclusivamente por llamado del VAR al árbitro.'},
+  {id:'peor_ex_campeon',name:'Peor equipo ex campeón del mundo',trophy:null,type:'a',pts:9,rule:'De los ex campeones clasificados, el que resulte peor rankeado en la tabla definitiva de la FIFA.'},
+];
+
+// ══════════════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════════════
+let currentUser = null;
+let userBets = {};      // { matchId: {h,a}, cats: {catId: val}, wc: '' }
+let allBets = {};       // { user: { matchId:{h,a}, cats:{}, wc:'' } }
+let results = {};       // { matchId: {h,a} }
+let catResults = {};    // { catId: value }
+let mundialStart = null;
+let wcFinalScores = null;
+
+// ══════════════════════════════════════════════════
+// API HELPERS
+// ══════════════════════════════════════════════════
+async function api(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: {'Content-Type':'application/json'},
+    redirect: 'follow'
+  });
+  return res.json();
+}
+
+function loading(msg) {
+  document.getElementById('loading-msg').textContent = msg || 'Cargando...';
+  document.getElementById('loading').classList.remove('hidden');
+}
+function doneLoading() {
+  document.getElementById('loading').classList.add('hidden');
+}
+
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showSaveHint() {
+  const h = document.getElementById('save-hint');
+  if (!h) return;
+  h.style.display = 'inline';
+  setTimeout(()=>h.style.display='none', 2500);
+}
+function isMundialStarted() {
+  if (!mundialStart) return false;
+  return new Date() >= new Date(mundialStart + 'T00:00:00');
+}
+function isLocked(match) {
+  const d = new Date(match.date + 'T00:00:00');
+  d.setDate(d.getDate()-1); d.setHours(23,59,59);
+  return new Date() > d;
+}
+
+// ══════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════
+async function doLogin() {
+  const name = document.getElementById('login-name').value.trim().toUpperCase();
+  const pin  = document.getElementById('login-pin').value.trim();
+  if (!name || !pin) return;
+  loading('Verificando...');
+  try {
+    const r = await api({action:'login', name, pin});
+    if (r.ok) {
+      currentUser = r.name;
+      await loadPlayerData();
+      document.getElementById('player-name-display').textContent = currentUser;
+      show('screen-player');
+      switchTab('grupos');
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  } finally { doneLoading(); }
+}
+
+function showAdminLogin() {
+  document.getElementById('admin-pin-input').value='';
+  document.getElementById('admin-login-error').style.display='none';
+  show('screen-admin-login');
+}
+
+async function doAdminLogin() {
+  const pin = document.getElementById('admin-pin-input').value.trim();
+  loading('Verificando...');
+  try {
+    const r = await api({action:'adminLogin', pin});
+    if (r.ok) {
+      await loadAdminData();
+      show('screen-admin');
+      switchAdminTab('resultados');
+    } else {
+      document.getElementById('admin-login-error').style.display='block';
+    }
+  } finally { doneLoading(); }
+}
+
+function doLogout() {
+  currentUser = null; userBets = {}; allBets = {}; results = {}; catResults = {};
+  document.getElementById('login-name').value='';
+  document.getElementById('login-pin').value='';
+  document.getElementById('login-error').style.display='none';
+  show('screen-login');
+}
+
+// ══════════════════════════════════════════════════
+// LOAD DATA
+// ══════════════════════════════════════════════════
+async function loadPlayerData() {
+  loading('Cargando tus apuestas...');
+  try {
+    const [betsRes, resRes] = await Promise.all([
+      api({action:'getBets', user:currentUser}),
+      api({action:'getResults'})
+    ]);
+    if (betsRes.ok) {
+      userBets.matches = betsRes.bets || {};
+      userBets.cats    = betsRes.cats || {};
+      userBets.wc      = betsRes.wc  || '';
+    }
+    if (resRes.ok) {
+      results      = resRes.results    || {};
+      catResults   = resRes.catResults || {};
+      mundialStart = resRes.mundialStart || null;
+    }
+    // Cargar apuestas de todos para el espía
+    await loadAllBets();
+  } finally { doneLoading(); }
+}
+
+async function loadAllBets() {
+  // Cargamos las apuestas de cada usuario para la vista espía
+  const promises = USERS.map(u => api({action:'getBets', user:u}));
+  const responses = await Promise.all(promises);
+  allBets = {};
+  USERS.forEach((u,i) => {
+    if (responses[i].ok) {
+      allBets[u] = {
+        matches: responses[i].bets || {},
+        cats:    responses[i].cats || {},
+        wc:      responses[i].wc  || '',
+      };
+    }
+  });
+}
+
+async function loadAdminData() {
+  loading('Cargando datos...');
+  try {
+    const [resRes] = await Promise.all([api({action:'getResults'})]);
+    if (resRes.ok) {
+      results      = resRes.results    || {};
+      catResults   = resRes.catResults || {};
+      mundialStart = resRes.mundialStart || null;
+    }
+    await loadAllBets();
+    renderAdminResults();
+    renderAdminCats();
+    recalc();
+    const inp = document.getElementById('mundial-start-input');
+    if (inp && mundialStart) inp.value = mundialStart;
+    document.getElementById('stat-mundial').textContent = isMundialStarted()?'Iniciado':'Pendiente';
+    document.getElementById('stat-results').textContent = Object.keys(results).length;
+  } finally { doneLoading(); }
+}
+
+// ══════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════
+function switchTab(t) {
+  const tabs=['grupos','categorias','wildcard','espia','tabla'];
+  document.querySelectorAll('#screen-player .tabs .tab').forEach((b,i)=>b.classList.toggle('active',tabs[i]===t));
+  tabs.forEach(tab=>{ const el=document.getElementById('tab-'+tab); if(el) el.style.display=tab===t?'':'none'; });
+  if(t==='tabla')     renderTabla();
+  if(t==='espia')     renderEspia();
+  if(t==='categorias') renderCats();
+  if(t==='wildcard')  renderWCPlayer();
+  if(t==='grupos')    renderGroups();
+}
+function switchAdminTab(t) {
+  const tabs=['resultados','categorias','wildcard','config','tabla'];
+  document.querySelectorAll('#screen-admin .tabs .tab').forEach((b,i)=>b.classList.toggle('active',tabs[i]===t));
+  tabs.forEach(tab=>{ const el=document.getElementById('admin-tab-'+tab); if(el) el.style.display=tab===t?'':'none'; });
+  if(t==='tabla')    renderAdminTabla();
+  if(t==='wildcard') renderWCAdmin();
+}
+
+// ══════════════════════════════════════════════════
+// RENDER: GRUPOS
+// ══════════════════════════════════════════════════
+function renderGroups() {
+  ['A','B','C'].forEach(g=>{
+    const ms=MATCHES.filter(m=>m.group===g), el=document.getElementById('matches-'+g); if(!el) return;
+    el.innerHTML=ms.map(m=>{
+      const locked=isLocked(m), bet=userBets.matches&&userBets.matches[m.id]||{};
+      const h=bet.h!==undefined?bet.h:'', a=bet.a!==undefined?bet.a:'';
+      return `<div class="match-row">
+        <div class="teams">${m.home} <span style="color:#bbb">vs</span> ${m.away}<div class="match-date">${m.date}</div></div>
+        ${locked
+          ?`<span class="locked-badge">Cerrado</span><span style="font-size:15px;font-weight:500;padding:0 8px">${h!==''?h:'?'} – ${a!==''?a:'?'}</span>`
+          :`<div style="display:flex;align-items:center;gap:6px">
+              <input class="score-input" type="number" min="0" max="20" value="${h}" id="h_${m.id}" placeholder="—"/>
+              <span class="score-sep">–</span>
+              <input class="score-input" type="number" min="0" max="20" value="${a}" id="a_${m.id}" placeholder="—"/>
+            </div><span class="open-badge">Abierto</span>`}
+      </div>`;
+    }).join('');
+  });
+}
+
+async function saveGroups() {
+  loading('Guardando...');
+  try {
+    const toSave = [];
+    MATCHES.forEach(m=>{
+      if(!isLocked(m)){
+        const hEl=document.getElementById('h_'+m.id), aEl=document.getElementById('a_'+m.id);
+        if(hEl&&aEl&&hEl.value!==''&&aEl.value!=='') {
+          toSave.push({matchId:m.id, h:parseInt(hEl.value), a:parseInt(aEl.value)});
+          if(!userBets.matches) userBets.matches={};
+          userBets.matches[m.id]={h:parseInt(hEl.value),a:parseInt(aEl.value)};
+        }
+      }
+    });
+    await Promise.all(toSave.map(b=>api({action:'saveBet',user:currentUser,...b})));
+    showSaveHint();
+  } finally { doneLoading(); }
+}
+
+// ══════════════════════════════════════════════════
+// RENDER: CATEGORÍAS
+// ══════════════════════════════════════════════════
+function renderCats() {
+  const el=document.getElementById('cats-form'); if(!el) return;
+  const locked=isMundialStarted();
+  document.getElementById('cats-lock-banner').style.display=locked?'':'none';
+  document.getElementById('cats-save-row').style.display=locked?'none':'';
+  const uc=userBets.cats||{};
+  el.innerHTML=CATEGORIES.map(c=>`
+    <div class="cat-row">
+      <div class="cat-label">
+        <div class="cat-name">${c.name}</div>
+        ${c.trophy?`<div class="cat-trophy">${c.trophy}</div>`:''}
+        <div class="cat-rule">${c.rule}</div>
+      </div>
+      <span class="cat-pts ${c.type}">${c.pts} pts</span>
+      ${locked
+        ?`<div class="cat-locked-val">${uc[c.id]||'<span style="color:#bbb;font-size:12px;font-weight:400">sin apuesta</span>'}</div>`
+        :`<input class="cat-input" type="text" id="cat_${c.id}" value="${uc[c.id]||''}" placeholder="Tu apuesta..."/>`}
+    </div>`).join('');
+}
+
+async function saveCats() {
+  if(isMundialStarted()) return;
+  loading('Guardando categorías...');
+  try {
+    const cats={};
+    CATEGORIES.forEach(c=>{ const el=document.getElementById('cat_'+c.id); if(el) cats[c.id]=el.value; });
+    userBets.cats=cats;
+    await api({action:'saveCats', user:currentUser, cats});
+    showSaveHint();
+  } finally { doneLoading(); }
+}
+
+// ══════════════════════════════════════════════════
+// RENDER: WILD CARD
+// ══════════════════════════════════════════════════
+function renderWCPlayer() {
+  const locked=isMundialStarted();
+  document.getElementById('wc-lock-banner').style.display=locked?'':'none';
+  document.getElementById('wc-save-btn').style.display=locked?'none':'';
+  const sel=document.getElementById('wc-select');
+  if(!sel) return;
+  sel.disabled=locked;
+  const saved=userBets.wc||'';
+  sel.innerHTML='<option value="">— Elegí un participante —</option>'+
+    USERS.filter(u=>u!==currentUser).map(u=>`<option value="${u}" ${saved===u?'selected':''}>${u}</option>`).join('');
+}
+
+async function saveWC() {
+  if(isMundialStarted()) return;
+  const sel=document.getElementById('wc-select');
+  if(!sel||!sel.value) return;
+  loading('Guardando Wild Card...');
+  try {
+    userBets.wc=sel.value;
+    await api({action:'saveWC', user:currentUser, wc:sel.value});
+    showSaveHint();
+  } finally { doneLoading(); }
+}
+
+// ══════════════════════════════════════════════════
+// RENDER: ESPÍA
+// ══════════════════════════════════════════════════
+function renderEspia() {
+  const el=document.getElementById('espia-content'); if(!el) return;
+  const mundialStarted=isMundialStarted();
+  let html='';
+
+  const lockedMatches=MATCHES.filter(m=>isLocked(m));
+  if(lockedMatches.length===0) {
+    html='<div style="font-size:14px;color:#888;padding:1rem 0;text-align:center">Todavía no hay partidos bloqueados.</div>';
+  } else {
+    html+='<div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">Partidos cerrados</div>';
+    lockedMatches.forEach(m=>{
+      const rows=USERS.map(u=>{
+        const bet=allBets[u]&&allBets[u].matches&&allBets[u].matches[m.id];
+        return `<div class="spy-row">
+          <div class="spy-name"><span class="avatar" style="width:22px;height:22px;font-size:10px;margin-right:6px">${u.slice(0,2)}</span>${u}</div>
+          ${bet?`<div class="spy-bet">${bet.h} – ${bet.a}</div>`:`<div class="spy-bet spy-pending">no apostó</div>`}
+        </div>`;
+      }).join('');
+      html+=`<div class="spy-match-card"><div class="spy-match-header">${m.home} vs ${m.away}</div><div class="spy-match-date">${m.date} · cerrado</div>${rows}</div>`;
+    });
+  }
+
+  if(mundialStarted) {
+    html+='<div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.04em;margin:1.5rem 0 10px">Categorías extra · bloqueadas</div>';
+    CATEGORIES.forEach(c=>{
+      const answers=USERS.map(u=>{
+        const val=allBets[u]&&allBets[u].cats&&allBets[u].cats[c.id]||'';
+        return val?`<div class="spy-answer"><span class="sname">${u}</span><span class="sval">${val}</span></div>`:'';
+      }).join('');
+      html+=`<div class="spy-cat-card"><div class="spy-cat-header"><div class="spy-cat-name">${c.name}</div><span class="cat-pts ${c.type}">${c.pts} pts</span></div><div class="spy-answers">${answers||'<span style="font-size:13px;color:#bbb">Nadie apostó.</span>'}</div></div>`;
+    });
+    html+='<div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.04em;margin:1.5rem 0 10px">Wild Card · bloqueada</div>';
+    const wcAnswers=USERS.map(u=>{ const val=allBets[u]&&allBets[u].wc||''; return val?`<div class="spy-answer"><span class="sname">${u}</span><span class="sval">${val}</span></div>`:''; }).join('');
+    html+=`<div class="spy-cat-card"><div class="spy-cat-header"><div class="spy-cat-name">Ganador del prode apostado</div></div><div class="spy-answers">${wcAnswers||'<span style="font-size:13px;color:#bbb">Nadie apostó.</span>'}</div></div>`;
+  } else {
+    html+='<div style="margin-top:1.5rem;padding:12px 16px;background:#f4f4f0;border-radius:8px;font-size:13px;color:#666">Las categorías y Wild Card se revelan cuando empieza el mundial.</div>';
+  }
+  el.innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════
+// PUNTAJES
+// ══════════════════════════════════════════════════
+function calcScores() {
+  const sc={};
+  USERS.forEach(u=>{
+    let pts=0;
+    const ub=allBets[u]||{};
+    MATCHES.forEach(m=>{
+      if(!results[m.id]) return;
+      const bet=ub.matches&&ub.matches[m.id]; if(!bet) return;
+      const rh=results[m.id].h, ra=results[m.id].a;
+      const rW=rh>ra?'H':rh<ra?'A':'E', bW=bet.h>bet.a?'H':bet.h<bet.a?'A':'E';
+      if(rW===bW) pts+=m.pts.base;
+      if(rh===bet.h&&ra===bet.a) pts+=m.pts.exact;
+    });
+    const uc=ub.cats||{};
+    CATEGORIES.forEach(c=>{ if(catResults[c.id]&&uc[c.id]&&uc[c.id].trim().toLowerCase()===catResults[c.id].trim().toLowerCase()) pts+=c.pts; });
+    sc[u]=pts;
+  });
+  return sc;
+}
+
+function renderTabla() {
+  const sc=calcScores(), sorted=Object.keys(sc).sort((a,b)=>sc[b]-sc[a]);
+  const el=document.getElementById('tabla-content'); if(!el) return;
+  el.innerHTML=`<div class="card-title">Posiciones · sin Wild Card</div><table class="tbl"><thead><tr><th style="width:24px">#</th><th>Jugador</th><th style="text-align:right">Puntos</th></tr></thead><tbody>${sorted.map((u,i)=>`<tr><td class="rank ${i===0?'gold':''}">${i+1}</td><td><span class="avatar">${u.slice(0,2)}</span>${u}</td><td style="text-align:right;font-weight:500">${sc[u]}</td></tr>`).join('')}</tbody></table>`;
+}
+
+// ══════════════════════════════════════════════════
+// ADMIN RENDERS
+// ══════════════════════════════════════════════════
+function renderAdminResults() {
+  const el=document.getElementById('admin-results'); if(!el) return;
+  el.innerHTML=MATCHES.map(m=>{
+    const r=results[m.id]||{};
+    return `<div class="match-row">
+      <div class="teams">${m.home} vs ${m.away}<div class="match-date">${m.date}</div></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="number" min="0" max="20" value="${r.h!==undefined?r.h:''}" id="rh_${m.id}" style="width:40px;height:32px;text-align:center;font-size:15px;font-weight:500;border:0.5px solid rgba(0,0,0,0.18);border-radius:8px;background:#f4f4f0;font-family:inherit" placeholder="—"/>
+        <span class="score-sep">–</span>
+        <input type="number" min="0" max="20" value="${r.a!==undefined?r.a:''}" id="ra_${m.id}" style="width:40px;height:32px;text-align:center;font-size:15px;font-weight:500;border:0.5px solid rgba(0,0,0,0.18);border-radius:8px;background:#f4f4f0;font-family:inherit" placeholder="—"/>
+        <button class="confirm-btn ${r.h!==undefined?'done':''}" id="rbtn_${m.id}" onclick="saveResult('${m.id}')">${r.h!==undefined?'Guardado':'Guardar'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function saveResult(mid) {
+  const h=document.getElementById('rh_'+mid).value, a=document.getElementById('ra_'+mid).value;
+  if(h===''||a==='') return;
+  loading('Guardando resultado...');
+  try {
+    results[mid]={h:parseInt(h),a:parseInt(a)};
+    await api({action:'saveResult', matchId:mid, h:parseInt(h), a:parseInt(a)});
+    const btn=document.getElementById('rbtn_'+mid);
+    btn.textContent='Guardado'; btn.classList.add('done');
+    document.getElementById('stat-results').textContent=Object.keys(results).length;
+  } finally { doneLoading(); }
+}
+
+function renderAdminCats() {
+  const el=document.getElementById('admin-cats'); if(!el) return;
+  el.innerHTML=CATEGORIES.map(c=>`
+    <div class="cat-row">
+      <div class="cat-label"><div class="cat-name">${c.name}</div>${c.trophy?`<div class="cat-trophy">${c.trophy}</div>`:''}</div>
+      <span class="cat-pts ${c.type}">${c.pts} pts</span>
+      <input class="cat-input" type="text" id="cr_${c.id}" value="${catResults[c.id]||''}" placeholder="Resultado real..." onchange="saveCatResult('${c.id}')"/>
+    </div>`).join('');
+}
+
+async function saveCatResult(cid) {
+  const el=document.getElementById('cr_'+cid); if(!el) return;
+  catResults[cid]=el.value;
+  await api({action:'saveCatResult', catId:cid, value:el.value});
+}
+
+function recalc() { const sc=calcScores(); renderAdminTabla(sc); renderWCAdmin(sc); }
+
+function renderAdminTabla(sc) {
+  if(!sc) sc=calcScores();
+  const sorted=Object.keys(sc).sort((a,b)=>sc[b]-sc[a]);
+  const el=document.getElementById('admin-tabla'); if(!el) return;
+  el.innerHTML=`<div class="card-title">Tabla · sin Wild Card</div><table class="tbl"><thead><tr><th style="width:24px">#</th><th>Jugador</th><th style="text-align:right">Puntos</th></tr></thead><tbody>${sorted.map((u,i)=>`<tr><td class="rank ${i===0?'gold':''}">${i+1}</td><td><span class="avatar">${u.slice(0,2)}</span>${u}</td><td style="text-align:right;font-weight:500">${sc[u]}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderWCAdmin(sc) {
+  if(!sc) sc=calcScores();
+  const sorted=Object.keys(sc).sort((a,b)=>sc[b]-sc[a]), leader=sorted[0];
+  const le=document.getElementById('wc-leader-name'); if(le) le.textContent=leader?`${leader} — ${sc[leader]} pts`:'— calculá primero';
+  const hits=USERS.filter(u=>{ const wc=allBets[u]&&allBets[u].wc||''; return wc.trim().toUpperCase()===leader&&u!==leader; });
+  const hl=document.getElementById('wc-hits-list'); if(!hl) return;
+  hl.innerHTML=hits.length===0?`<div style="font-size:14px;color:#888">Nadie apostó al líder actual.</div>`:
+    hits.map(u=>`<div class="wc-hit-row"><span><span class="avatar">${u.slice(0,2)}</span>${u}</span><span style="font-size:14px">${sc[u]} pts <span class="delta">→ ${sc[u]+5} pts (+5)</span></span></div>`).join('');
+  wcFinalScores={leader, sc, hits};
+}
+
+function applyWildCard() {
+  if(!wcFinalScores) { recalc(); return; }
+  const {leader, sc, hits}=wcFinalScores;
+  if(hits.length===0){ alert('Nadie apostó al líder. No hay Wild Card que aplicar.'); return; }
+  const final={...sc}; hits.forEach(u=>final[u]=(final[u]||0)+5);
+  const sortedFinal=Object.keys(final).sort((a,b)=>final[b]-final[a]);
+  const el=document.getElementById('admin-tabla');
+  if(el) el.innerHTML=`<div class="card-title" style="color:#854f0b">Tabla final · Wild Card aplicada</div><table class="tbl"><thead><tr><th style="width:24px">#</th><th>Jugador</th><th style="text-align:right">Puntos</th></tr></thead><tbody>${sortedFinal.map((u,i)=>`<tr><td class="rank ${i===0?'gold':''}">${i+1}</td><td><span class="avatar">${u.slice(0,2)}</span>${u}${hits.includes(u)?` <span class="delta">+5 WC</span>`:''}</td><td style="text-align:right;font-weight:500">${final[u]}</td></tr>`).join('')}</tbody></table>`;
+  switchAdminTab('tabla');
+  alert(`Wild Card aplicada. ${hits.join(', ')} ${hits.length===1?'sumó':'sumaron'} +5 pts.`);
+}
+
+async function saveMundialStart() {
+  const val=document.getElementById('mundial-start-input').value; if(!val) return;
+  loading('Guardando...');
+  try {
+    mundialStart=val;
+    await api({action:'saveMundialStart', date:val});
+    document.getElementById('stat-mundial').textContent=isMundialStarted()?'Iniciado':'Pendiente';
+    const el=document.getElementById('config-saved');
+    el.textContent='Fecha guardada: '+val;
+    setTimeout(()=>el.textContent='',3000);
+  } finally { doneLoading(); }
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', ()=>{
+  doneLoading();
+  show('screen-login');
+});
+</script>
+</body>
+</html>
