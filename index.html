@@ -240,7 +240,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
 
   <div id="tab-espia" style="display:none">
     <div class="section-header">Apuestas reveladas</div>
-    <div class="section-sub">Sólo se muestran apuestas bloqueadas, es decir, que ya no puedan modificarse. Las categorías y Wild Card se revelarán una vez iniciado el mundial.</div>
+    <div class="section-sub">Solo se muestran apuestas bloqueadas. Categorías y Wild Card se revelan una vez iniciado el mundial.</div>
     <div id="espia-content"></div>
   </div>
 
@@ -305,6 +305,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
   </div>
 </div>
 </div><!-- .app -->
+<div style="text-align:center;padding:1.5rem 1rem 2rem;font-size:11px;color:#2a3a5a;line-height:1.6;max-width:700px;margin:0 auto">
+  Creado por <span style="color:#3a4a6a;font-weight:600">FIGUSA</span><br>
+  <span style="font-size:10px">Federación Internacional de Gestión Unificada de Scoring de Aciertos</span>
+</div>
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycby09-Bn8vrLJSsXCU5M50WTlXwgV4jzRFAh2Ld39EZ6haYY7xlwcQZXLI9g7cnn_3DS0Q/exec';
@@ -570,9 +574,8 @@ function renderGroups(){
   order.forEach(key=>{
     if(!groups[key])return;
     const ms=groups[key];
-    const isElim=['FD','FO','FC','FS','FF'].includes(key);
     html+=`<div class="card" style="margin-bottom:10px">
-      <div class="card-title">${PHASE_LABELS[key]||key} ${isElim?'<span style="color:#5a6a8a;font-weight:400">· base '+(ms[0].pts.base)+' pts, exacto +'+(ms[0].pts.exact)+' pts</span>':''}</div>`;
+      <div class="card-title">${PHASE_LABELS[key]||key} <span style="color:#5a6a8a;font-weight:400">· base ${ms[0].pts.base} pts, exacto +${ms[0].pts.exact} pts</span></div>`;
     ms.forEach(m=>{
       if(m.tbd){
         html+=`<div class="tbd-row"><div class="teams" style="color:#3a4a6a">${m.home} vs ${m.away}<div class="match-date">${m.date}</div></div><span class="nodef-badge">Por definirse</span></div>`;
