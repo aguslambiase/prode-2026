@@ -79,6 +79,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
 .cat-pts.b{background:rgba(184,150,12,0.15);color:#d4aa20;border:0.5px solid rgba(184,150,12,0.3)}
 .cat-input{width:150px;height:32px;font-size:13px;border:0.5px solid rgba(255,255,255,0.12);border-radius:8px;padding:0 10px;background:#0d1525;color:#e8e8e0;font-family:inherit;flex-shrink:0}
 .cat-input:disabled{opacity:.4}
+.cat-select{appearance:auto}
 .cat-locked-val{font-size:13px;font-weight:500;color:#e8e8e0;min-width:120px;text-align:right;flex-shrink:0}
 
 /* TABLE */
@@ -446,23 +447,52 @@ const PHASE_LABELS = {
   FS:'Semifinales',FF:'Final'
 };
 
+// ── EQUIPOS CLASIFICADOS ──
+const TEAMS = [
+  'Algeria','Arabia Saudita','Argentina','Australia','Austria','Bélgica',
+  'Bosnia','Brasil','Cabo Verde','Canada','Chequia','Colombia','Corea del Sur',
+  'Costa de Marfil','Croacia','Curazao','Ecuador','Egipto','Escocia',
+  'España','Estados Unidos','Francia','Ghana','Haiti','Inglaterra','Irak',
+  'Irán','Japón','Jordania','Marruecos','Mexico','Nigeria (placeholder)',
+  'Noruega','Nueva Zelanda','Países Bajos','Panama','Paraguay','Polonia (placeholder)',
+  'Portugal','Qatar','RD Congo','Senegal','Sudáfrica','Suecia','Suiza',
+  'Tunez','Turquía','Uruguay','Uzbekistan'
+].sort();
+
+// inputType: 'team' = dropdown países | 'player' = texto Nombre Apellido (País) | 'number' = numérico | 'text' = libre
 const CATEGORIES = [
-  {id:'Cat1',name:'Campeón',trophy:null,type:'a',pts:9,rule:'El equipo que gane la Copa del Mundo 2026.'},
-  {id:'Cat2',name:'Goleador',trophy:'Trofeo Erling Haaland',type:'b',pts:12,rule:'El jugador que más goles convierta. En caso de empate, se considera al que haya jugado menos minutos.'},
-  {id:'Cat3',name:'Balón de Oro',trophy:null,type:'b',pts:12,rule:'El jugador elegido como mejor del torneo según el premio oficial de la FIFA.'},
-  {id:'Cat4',name:'Goles de Messi',trophy:'Trofeo Mateo Messi',type:'a',pts:9,rule:'Cantidad exacta de goles que convertirá Messi durante todo el torneo. Todo o nada: hay que acertar el número exacto.'},
-  {id:'Cat5',name:'Primer jugador en hacer un gol',trophy:null,type:'b',pts:12,rule:'El jugador que convierta el primer gol del torneo en el partido inaugural. Si es gol en contra, no cuenta y se pasa al siguiente.'},
-  {id:'Cat6',name:'Primer equipo en tener un expulsado',trophy:'Trofeo Carlos Sanchez',type:'a',pts:9,rule:'El primer equipo cuyo jugador reciba tarjeta roja (directa o doble amarilla) en cualquier partido del torneo.'},
-  {id:'Cat7',name:'Cantidad de expulsados uruguayos',trophy:'Trofeo Carlos Sanchez',type:'a',pts:9,rule:'Número exacto de tarjetas rojas recibidas por jugadores de Uruguay durante todo el torneo. Todo o nada.'},
-  {id:'Cat8',name:'Primer eliminado',trophy:'Trofeo Marcelo Bielsa',type:'a',pts:9,rule:'El primer seleccionado en quedar matemáticamente eliminado del torneo.'},
-  {id:'Cat9',name:'Primer gol argentino',trophy:'Trofeo Kolasinac en contra',type:'a',pts:9,rule:'El primer jugador del seleccionado argentino en convertir un gol a favor de Argentina. Goles en contra del rival no cuentan.'},
-  {id:'Cat10',name:'Revelación',trophy:'Trofeo Enrico Andrea Lombardo',type:'a',pts:9,rule:'Equipo que nunca haya jugado una final del mundo ni sea cabeza de serie en este mundial, y que termine más alto en la tabla definitiva de la FIFA al finalizar el torneo.'},
-  {id:'Cat11',name:'N° total de goles en contra',trophy:'Trofeo Andrés Escobar',type:'a',pts:9,rule:'Cantidad exacta de goles en contra registrados en todo el torneo. Todo o nada.'},
-  {id:'Cat12',name:'Árbitro que dirige la final',trophy:'Trofeo Horacio Elizondo',type:'b',pts:12,rule:'El árbitro principal designado por la FIFA para dirigir el partido final del mundial.'},
-  {id:'Cat13',name:'Primer equipo en gozar de un penal por VAR',trophy:null,type:'a',pts:9,rule:'El primer equipo que goce de la posibilidad de patear un penal cobrado exclusivamente por llamado del VAR al árbitro. No vale si el árbitro ya lo había señalado antes de la revisión.'},
-  {id:'Cat14',name:'Peor equipo ex campeón del mundo',trophy:null,type:'a',pts:9,rule:'De los países que han sido campeones del mundo y estén clasificados a este mundial, el que resulte peor rankeado en la tabla definitiva de posiciones que publique la FIFA al finalizar el torneo.'},
-  {id:'Cat15',name:'Primera referencia falopa de Alfaro',trophy:'Trofeo Utopías Imposibles',type:'a',pts:9,rule:'Apellido de la primera personalidad de la ciencia, filosofía, política o cultura que el Sr. Gustavo Alfaro cite en conferencia de prensa o entrevista dentro del estadio, a partir del comienzo efectivo del mundial.'},
-  {id:'Cat16',name:'Primer gol bosnio',trophy:'Trofeo Kolasinac a favor',type:'a',pts:9,rule:'El primer jugador del seleccionado bosnio en convertir un gol a favor de Bosnia durante el torneo.'},
+  {id:'Cat1', name:'Campeón', trophy:null, type:'a', pts:9, inputType:'team',
+   rule:'El equipo que gane la Copa del Mundo 2026.'},
+  {id:'Cat2', name:'Goleador', trophy:'Trofeo Erling Haaland', type:'b', pts:12, inputType:'player',
+   rule:'El jugador que más goles convierta. En caso de empate, se considera al que haya jugado menos minutos. Formato: Nombre Apellido (País) — ej: Kylian Mbappé (Francia)'},
+  {id:'Cat3', name:'Balón de Oro', trophy:null, type:'b', pts:12, inputType:'player',
+   rule:'El jugador elegido como mejor del torneo según el premio oficial de la FIFA. Formato: Nombre Apellido (País) — ej: Kylian Mbappé (Francia)'},
+  {id:'Cat4', name:'Goles de Messi', trophy:'Trofeo Mateo Messi', type:'a', pts:9, inputType:'number',
+   rule:'Cantidad exacta de goles que convertirá Messi durante todo el torneo. Todo o nada: hay que acertar el número exacto.'},
+  {id:'Cat5', name:'Primer jugador en hacer un gol', trophy:null, type:'b', pts:12, inputType:'player',
+   rule:'El jugador que convierta el primer gol del torneo. Si es gol en contra no cuenta y se pasa al siguiente. Formato: Nombre Apellido (País) — ej: Kylian Mbappé (Francia)'},
+  {id:'Cat6', name:'Primer equipo en tener un expulsado', trophy:'Trofeo Carlos Sanchez', type:'a', pts:9, inputType:'team',
+   rule:'El primer equipo cuyo jugador reciba tarjeta roja (directa o doble amarilla) en cualquier partido del torneo.'},
+  {id:'Cat7', name:'Cantidad de expulsados uruguayos', trophy:'Trofeo Carlos Sanchez', type:'a', pts:9, inputType:'number',
+   rule:'Número exacto de tarjetas rojas recibidas por jugadores de Uruguay durante todo el torneo. Todo o nada.'},
+  {id:'Cat8', name:'Primer eliminado', trophy:'Trofeo Marcelo Bielsa', type:'a', pts:9, inputType:'team',
+   rule:'El primer seleccionado en quedar matemáticamente eliminado del torneo.'},
+  {id:'Cat9', name:'Primer gol argentino', trophy:'Trofeo Kolasinac en contra', type:'a', pts:9, inputType:'player',
+   rule:'El primer jugador de Argentina en convertir un gol a favor del equipo. Goles en contra del rival no cuentan. Formato: Nombre Apellido (Argentina)'},
+  {id:'Cat10', name:'Revelación', trophy:'Trofeo Enrico Andrea Lombardo', type:'a', pts:9, inputType:'team',
+   rule:'Equipo que nunca haya jugado una final del mundo ni sea cabeza de serie en este mundial, y que termine más alto en la tabla definitiva de la FIFA.'},
+  {id:'Cat11', name:'N° total de goles en contra', trophy:'Trofeo Andrés Escobar', type:'a', pts:9, inputType:'number',
+   rule:'Cantidad exacta de goles en contra registrados en todo el torneo. Todo o nada.'},
+  {id:'Cat12', name:'Árbitro que dirige la final', trophy:'Trofeo Horacio Elizondo', type:'b', pts:12, inputType:'text',
+   rule:'El árbitro principal designado por la FIFA para dirigir el partido final. Escribí Apellido (País) — ej: Elizondo (Argentina)'},
+  {id:'Cat13', name:'Primer equipo en gozar de un penal por VAR', trophy:null, type:'a', pts:9, inputType:'team',
+   rule:'El primer equipo que patee un penal cobrado exclusivamente por llamado del VAR al árbitro. No vale si el árbitro ya lo había señalado antes de la revisión.'},
+  {id:'Cat14', name:'Peor equipo ex campeón del mundo', trophy:null, type:'a', pts:9, inputType:'team',
+   rule:'De los ex campeones clasificados (Argentina, Brasil, Francia, Alemania, España, Inglaterra, Uruguay), el que resulte peor rankeado en la tabla definitiva de la FIFA.'},
+  {id:'Cat15', name:'Primera referencia falopa de Alfaro', trophy:'Trofeo Utopías Imposibles', type:'a', pts:9, inputType:'text',
+   rule:'Apellido de la primera personalidad de la ciencia, filosofía, política o cultura que Gustavo Alfaro cite en conferencia de prensa o entrevista dentro del estadio, desde el inicio del mundial.'},
+  {id:'Cat16', name:'Primer gol bosnio', trophy:'Trofeo Kolasinac a favor', type:'a', pts:9, inputType:'player',
+   rule:'El primer jugador de Bosnia en convertir un gol a favor del equipo. Formato: Nombre Apellido (Bosnia)'},
 ];
 
 // STATE
@@ -617,6 +647,26 @@ async function saveGroups(){
 }
 
 // RENDER CATS
+function catInput(c, val, locked) {
+  if (locked) {
+    return `<div class="cat-locked-val">${val||'<span style="color:#3a4a6a;font-size:11px;font-weight:400">sin apuesta</span>'}</div>`;
+  }
+  if (c.inputType === 'team') {
+    return `<select class="cat-input cat-select" id="cat_${c.id}" style="width:170px">
+      <option value="">— Elegí un equipo —</option>
+      ${TEAMS.map(t=>`<option value="${t}" ${val===t?'selected':''}>${t}</option>`).join('')}
+    </select>`;
+  }
+  if (c.inputType === 'number') {
+    return `<input class="cat-input" type="number" min="0" max="99" id="cat_${c.id}" value="${val||''}" placeholder="0" style="width:80px;text-align:center"/>`;
+  }
+  if (c.inputType === 'player') {
+    return `<input class="cat-input" type="text" id="cat_${c.id}" value="${val||''}" placeholder="Nombre Apellido (País)" style="width:220px"/>`;
+  }
+  // text libre
+  return `<input class="cat-input" type="text" id="cat_${c.id}" value="${val||''}" placeholder="Tu apuesta..." style="width:200px"/>`;
+}
+
 function renderCats(){
   const el=document.getElementById('cats-form');if(!el)return;
   const locked=isMundialStarted();
@@ -631,9 +681,7 @@ function renderCats(){
         <div class="cat-rule">${c.rule}</div>
       </div>
       <span class="cat-pts ${c.type}">${c.pts} pts</span>
-      ${locked
-        ?`<div class="cat-locked-val">${uc[c.id]||'<span style="color:#3a4a6a;font-size:11px;font-weight:400">sin apuesta</span>'}</div>`
-        :`<input class="cat-input" type="text" id="cat_${c.id}" value="${uc[c.id]||''}" placeholder="Tu apuesta..."/>`}
+      ${catInput(c, uc[c.id]||'', locked)}
     </div>`).join('');
 }
 
@@ -694,6 +742,61 @@ function renderEspia(){
   el.innerHTML=html;
 }
 
+// NORMALIZACIÓN — elimina acentos, mayúsculas, espacios extra para comparación flexible
+function normalize(str) {
+  if (str === null || str === undefined) return '';
+  return str.toString()
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita acentos
+    .replace(/[^a-z0-9]/g, ' ')                       // reemplaza símbolos por espacio
+    .replace(/\s+/g, ' ')                             // colapsa espacios
+    .trim();
+}
+
+// Sinónimos: cualquier variante mapea al nombre canónico
+const SYNONYMS = {
+  'holanda': 'paises bajos', 'netherlands': 'paises bajos', 'holland': 'paises bajos',
+  'estados unidos': 'estados unidos', 'usa': 'estados unidos', 'eeuu': 'estados unidos',
+  'corea': 'corea del sur', 'korea': 'corea del sur', 'south korea': 'corea del sur',
+  'costa de marfil': 'costa de marfil', 'ivory coast': 'costa de marfil', 'cote divoire': 'costa de marfil',
+  'rd congo': 'rd congo', 'congo': 'rd congo', 'republica democratica del congo': 'rd congo',
+  'belgica': 'belgica', 'belgium': 'belgica',
+  'alemania': 'alemania', 'germany': 'alemania',
+  'francia': 'francia', 'france': 'francia',
+  'espana': 'espana', 'spain': 'espana',
+  'inglaterra': 'inglaterra', 'england': 'inglaterra',
+  'brasil': 'brasil', 'brazil': 'brasil',
+  'turquia': 'turquia', 'turkey': 'turquia', 'turkiye': 'turquia',
+  'marruecos': 'marruecos', 'morocco': 'marruecos',
+  'suecia': 'suecia', 'sweden': 'suecia',
+  'suiza': 'suiza', 'switzerland': 'suiza',
+  'japon': 'japon', 'japan': 'japon',
+  'argelia': 'algeria', 'algeria': 'algeria',
+  'nueva zelanda': 'nueva zelanda', 'new zealand': 'nueva zelanda',
+  'paises bajos': 'paises bajos',
+};
+
+function normCat(str) {
+  const n = normalize(str);
+  return SYNONYMS[n] || n;
+}
+
+function catsMatch(bet, result, cat) {
+  if (!bet || !result) return false;
+  if (cat.inputType === 'number') {
+    return parseInt(bet) === parseInt(result);
+  }
+  // Para equipos y jugadores: comparación normalizada
+  // Para jugadores ignoramos el (País) al comparar — solo comparamos la parte del nombre
+  if (cat.inputType === 'player') {
+    // Extraer nombre sin el (País) para comparar
+    const cleanBet = normalize(bet.replace(/\(.*?\)/g, ''));
+    const cleanRes = normalize(result.replace(/\(.*?\)/g, ''));
+    return cleanBet === cleanRes && cleanBet.length > 0;
+  }
+  return normCat(bet) === normCat(result);
+}
+
 // SCORES
 function calcScores(){
   const sc={};
@@ -706,7 +809,9 @@ function calcScores(){
       if(rW===bW)pts+=m.pts.base;if(rh===bet.h&&ra===bet.a)pts+=m.pts.exact;
     });
     const uc=ub.cats||{};
-    CATEGORIES.forEach(c=>{if(catResults[c.id]&&uc[c.id]&&uc[c.id].trim().toLowerCase()===catResults[c.id].trim().toLowerCase())pts+=c.pts});
+    CATEGORIES.forEach(c=>{
+      if(catResults[c.id] && uc[c.id] && catsMatch(uc[c.id], catResults[c.id], c)) pts+=c.pts;
+    });
     sc[u]=pts;
   });
   return sc;
@@ -755,9 +860,34 @@ async function saveResult(mid){
   }finally{doneLoading()}
 }
 
+function adminCatInput(c) {
+  const val = catResults[c.id] || '';
+  if (c.inputType === 'team') {
+    return `<select class="cat-input cat-select" id="cr_${c.id}" style="width:170px" onchange="saveCatResult('${c.id}')">
+      <option value="">— Resultado real —</option>
+      ${TEAMS.map(t=>`<option value="${t}" ${val===t?'selected':''}>${t}</option>`).join('')}
+    </select>`;
+  }
+  if (c.inputType === 'number') {
+    return `<input class="cat-input" type="number" min="0" max="99" id="cr_${c.id}" value="${val}" placeholder="0" style="width:80px;text-align:center" onchange="saveCatResult('${c.id}')"/>`;
+  }
+  if (c.inputType === 'player') {
+    return `<input class="cat-input" type="text" id="cr_${c.id}" value="${val}" placeholder="Nombre Apellido (País)" style="width:220px" onchange="saveCatResult('${c.id}')"/>`;
+  }
+  return `<input class="cat-input" type="text" id="cr_${c.id}" value="${val}" placeholder="Resultado real..." style="width:200px" onchange="saveCatResult('${c.id}')"/>`;
+}
+
 function renderAdminCats(){
   const el=document.getElementById('admin-cats');if(!el)return;
-  el.innerHTML=CATEGORIES.map(c=>`<div class="cat-row"><div class="cat-label"><div class="cat-name">${c.name}</div>${c.trophy?`<div class="cat-trophy">${c.trophy}</div>`:''}</div><span class="cat-pts ${c.type}">${c.pts} pts</span><input class="cat-input" type="text" id="cr_${c.id}" value="${catResults[c.id]||''}" placeholder="Resultado real..." onchange="saveCatResult('${c.id}')"/></div>`).join('');
+  el.innerHTML=CATEGORIES.map(c=>`
+    <div class="cat-row">
+      <div class="cat-label">
+        <div class="cat-name">${c.name}</div>
+        ${c.trophy?`<div class="cat-trophy">${c.trophy}</div>`:''}
+      </div>
+      <span class="cat-pts ${c.type}">${c.pts} pts</span>
+      ${adminCatInput(c)}
+    </div>`).join('');
 }
 
 async function saveCatResult(cid){const el=document.getElementById('cr_'+cid);if(el){catResults[cid]=el.value;await api({action:'saveCatResult',catId:cid,value:el.value})}}
