@@ -217,7 +217,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
     <div class="section-header">Mis apuestas</div>
     <div class="section-sub">Podés editar hasta las 23:59 del día anterior a cada partido. Acertar resultado exacto suma puntos extra.</div>
     <div id="matches-container"></div>
-    <div class="btn-row"><button class="btn primary" onclick="saveGroups()">Guardar apuestas</button></div>
   </div>
 
   <div id="tab-categorias" style="display:none">
@@ -453,8 +452,8 @@ const TEAMS = [
   'Bosnia','Brasil','Cabo Verde','Canada','Chequia','Colombia','Corea del Sur',
   'Costa de Marfil','Croacia','Curazao','Ecuador','Egipto','Escocia',
   'España','Estados Unidos','Francia','Ghana','Haiti','Inglaterra','Irak',
-  'Irán','Japón','Jordania','Marruecos','Mexico','Nigeria',
-  'Noruega','Nueva Zelanda','Países Bajos','Panama','Paraguay','Polonia',
+  'Irán','Japón','Jordania','Marruecos','Mexico','Nigeria (placeholder)',
+  'Noruega','Nueva Zelanda','Países Bajos','Panama','Paraguay','Polonia (placeholder)',
   'Portugal','Qatar','RD Congo','Senegal','Sudáfrica','Suecia','Suiza',
   'Tunez','Turquía','Uruguay','Uzbekistan'
 ].sort();
@@ -596,7 +595,6 @@ function switchAdminTab(t){
 // RENDER GROUPS
 function renderGroups(){
   const container=document.getElementById('matches-container');if(!container)return;
-  // Group matches by phase/group
   const groups={};
   MATCHES.forEach(m=>{
     const key=m.group||m.phase;
@@ -608,6 +606,8 @@ function renderGroups(){
   order.forEach(key=>{
     if(!groups[key])return;
     const ms=groups[key];
+    const isElim=['FD','FO','FC','FS','FF'].includes(key);
+    const hasOpen=ms.some(m=>!m.tbd&&!isLocked(m));
     html+=`<div class="card" style="margin-bottom:10px">
       <div class="card-title">${PHASE_LABELS[key]||key} <span style="color:#5a6a8a;font-weight:400">· base ${ms[0].pts.base} pts, exacto +${ms[0].pts.exact} pts</span></div>`;
     ms.forEach(m=>{
@@ -624,15 +624,42 @@ function renderGroups(){
         </div>`;
       }
     });
+    if(hasOpen){
+      const label = isElim ? (PHASE_LABELS[key]||key) : 'Grupo '+key;
+      html+=`<div style="margin-top:10px;padding-top:10px;border-top:0.5px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:12px">
+        <button class="btn primary" style="font-size:13px;padding:7px 16px" onclick="saveGroup('${key}')">Guardar ${label}</button>
+        <span id="saved-${key}" style="font-size:12px;color:#3a9e5f;display:none">Guardado ✓</span>
+      </div>`;
+    }
     html+='</div>';
   });
   container.innerHTML=html;
 }
 
-async function saveGroups(){
-  loading('Guardando...');
+async function saveGroup(key){
+  loading('Guardando '+key+'...');
   try{
-    const betsToSave = {};
+    const groupMatches=MATCHES.filter(m=>(m.group||m.phase)===key&&!m.tbd&&!isLocked(m));
+    const betsToSave={};
+    groupMatches.forEach(m=>{
+      const hEl=document.getElementById('h_'+m.id),aEl=document.getElementById('a_'+m.id);
+      if(hEl&&aEl&&hEl.value!==''&&aEl.value!==''){
+        betsToSave[m.id]={h:parseInt(hEl.value),a:parseInt(aEl.value)};
+        if(!userBets.matches)userBets.matches={};
+        userBets.matches[m.id]={h:parseInt(hEl.value),a:parseInt(aEl.value)};
+      }
+    });
+    if(Object.keys(betsToSave).length===0){doneLoading();return;}
+    await api({action:'saveBets',user:currentUser,bets:betsToSave});
+    const hint=document.getElementById('saved-'+key);
+    if(hint){hint.style.display='inline';setTimeout(()=>hint.style.display='none',3000);}
+  }finally{doneLoading()}
+}
+
+async function saveGroups(){
+  loading('Guardando todo...');
+  try{
+    const betsToSave={};
     MATCHES.filter(m=>!m.tbd&&!isLocked(m)).forEach(m=>{
       const hEl=document.getElementById('h_'+m.id),aEl=document.getElementById('a_'+m.id);
       if(hEl&&aEl&&hEl.value!==''&&aEl.value!==''){
@@ -642,7 +669,7 @@ async function saveGroups(){
       }
     });
     if(Object.keys(betsToSave).length===0){doneLoading();return;}
-    await api({action:'saveBets', user:currentUser, bets:betsToSave});
+    await api({action:'saveBets',user:currentUser,bets:betsToSave});
     showSaveHint();
   }finally{doneLoading()}
 }
