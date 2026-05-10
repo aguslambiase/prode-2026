@@ -620,7 +620,7 @@ function renderGroups(){
           <div class="teams">${m.home} <span style="color:#3a4a6a">vs</span> ${m.away}<div class="match-date">${m.date}</div></div>
           ${locked
             ?`<span class="locked-badge">Cerrado</span><span style="font-size:16px;font-weight:700;padding:0 8px;color:#fff">${h!==''?h:'?'} – ${a!==''?a:'?'}</span>`
-            :`<div style="display:flex;align-items:center;gap:6px"><input class="score-input" type="number" min="0" max="20" value="${h}" id="h_${m.id}" placeholder="—"/><span class="score-sep">–</span><input class="score-input" type="number" min="0" max="20" value="${a}" id="a_${m.id}" placeholder="—"/></div><span class="open-badge">Abierto</span>`}
+            :`<div style="display:flex;align-items:center;gap:6px"><input class="score-input" type="number" min="0" max="20" step="1" value="${h}" id="h_${m.id}" placeholder="—"/><span class="score-sep">–</span><input class="score-input" type="number" min="0" max="20" step="1" value="${a}" id="a_${m.id}" placeholder="—"/></div><span class="open-badge">Abierto</span>`}
         </div>`;
       }
     });
@@ -686,7 +686,7 @@ function catInput(c, val, locked) {
     </select>`;
   }
   if (c.inputType === 'number') {
-    return `<input class="cat-input" type="number" min="0" max="99" id="cat_${c.id}" value="${val||''}" placeholder="0" style="width:80px;text-align:center"/>`;
+    return `<input class="cat-input" type="number" min="0" max="99" step="1" id="cat_${c.id}" value="${val||''}" placeholder="0" style="width:80px;text-align:center"/>`;
   }
   if (c.inputType === 'player') {
     return `<input class="cat-input" type="text" id="cat_${c.id}" value="${val||''}" placeholder="Nombre Apellido (País)" style="width:220px"/>`;
@@ -865,9 +865,9 @@ function renderAdminResults(){
       const r=results[m.id]||{};
       html+=`<div class="match-row"><div class="teams">${m.home} vs ${m.away}<div class="match-date">${m.date}</div></div>
         <div style="display:flex;align-items:center;gap:6px">
-          <input type="number" min="0" max="20" value="${r.h!==undefined?r.h:''}" id="rh_${m.id}" style="width:40px;height:34px;text-align:center;font-size:15px;font-weight:600;border:0.5px solid rgba(255,255,255,0.12);border-radius:8px;background:#0d1525;color:#e8e8e0;font-family:inherit" placeholder="—"/>
+          <input type="number" min="0" max="20" step="1" value="${r.h!==undefined?r.h:''}" id="rh_${m.id}" style="width:40px;height:34px;text-align:center;font-size:15px;font-weight:600;border:0.5px solid rgba(255,255,255,0.12);border-radius:8px;background:#0d1525;color:#e8e8e0;font-family:inherit" placeholder="—"/>
           <span class="score-sep">–</span>
-          <input type="number" min="0" max="20" value="${r.a!==undefined?r.a:''}" id="ra_${m.id}" style="width:40px;height:34px;text-align:center;font-size:15px;font-weight:600;border:0.5px solid rgba(255,255,255,0.12);border-radius:8px;background:#0d1525;color:#e8e8e0;font-family:inherit" placeholder="—"/>
+          <input type="number" min="0" max="20" step="1" value="${r.a!==undefined?r.a:''}" id="ra_${m.id}" style="width:40px;height:34px;text-align:center;font-size:15px;font-weight:600;border:0.5px solid rgba(255,255,255,0.12);border-radius:8px;background:#0d1525;color:#e8e8e0;font-family:inherit" placeholder="—"/>
           <button class="confirm-btn ${r.h!==undefined?'done':''}" id="rbtn_${m.id}" onclick="saveResult('${m.id}')">${r.h!==undefined?'✓ Guardado':'Guardar'}</button>
         </div></div>`;
     });
@@ -897,7 +897,7 @@ function adminCatInput(c) {
     </select>`;
   }
   if (c.inputType === 'number') {
-    return `<input class="cat-input" type="number" min="0" max="99" id="cr_${c.id}" value="${val}" placeholder="0" style="width:80px;text-align:center" onchange="saveCatResult('${c.id}')"/>`;
+    return `<input class="cat-input" type="number" min="0" max="99" step="1" id="cr_${c.id}" value="${val}" placeholder="0" style="width:80px;text-align:center" onchange="saveCatResult('${c.id}')"/>`;
   }
   if (c.inputType === 'player') {
     return `<input class="cat-input" type="text" id="cr_${c.id}" value="${val}" placeholder="Nombre Apellido (País)" style="width:220px" onchange="saveCatResult('${c.id}')"/>`;
