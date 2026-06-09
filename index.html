@@ -193,7 +193,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
 <div id="screen-login" class="screen active">
   <div class="login-wrap">
     <div class="login-card">
-      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Carlos" autocomplete="off"/></div>
+      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Lomba" autocomplete="off"/></div>
       <div class="field"><label>PIN</label><input type="password" id="login-pin" placeholder="4 dígitos" maxlength="4"/></div>
       <button class="btn primary" style="width:100%;justify-content:center;height:42px" onclick="doLogin()">Entrar</button>
       <div class="error-msg" id="login-error" style="display:none">Usuario o PIN incorrecto</div>
@@ -1136,20 +1136,23 @@ async function saveGroups(){
 }
 
 // RENDER CATS
-function acWidget(id, val, list, placeholder) {
-  return `<div class="ac-wrap" id="wrap_${id}">
-    <input class="ac-input" type="text" id="cat_${id}" value="${val||''}" placeholder="${placeholder}" autocomplete="off"
-      oninput="acFilter('${id}')" onfocus="acFilter('${id}')" onblur="setTimeout(()=>acClose('${id}'),200)"/>
-    <div class="ac-dropdown" id="dd_${id}"></div>
+function acWidget(fieldId, val, list, placeholder, adminMode) {
+  // fieldId is the full input id (e.g. 'cat_Cat2' or 'cr_Cat2')
+  const listKey = (list === REFEREES) ? 'ref' : 'player';
+  return `<div class="ac-wrap" id="wrap_${fieldId}">
+    <input class="ac-input" type="text" id="${fieldId}" value="${val||''}" placeholder="${placeholder}" autocomplete="off"
+      oninput="acFilter('${fieldId}','${listKey}')" onfocus="acFilter('${fieldId}','${listKey}')" onblur="setTimeout(()=>acClose('${fieldId}'),200)"
+      ${adminMode ? `onchange="saveCatResult('${fieldId.replace('cr_','')}')"` : ''}/>
+    <div class="ac-dropdown" id="dd_${fieldId}"></div>
   </div>`;
 }
 
-function acFilter(id) {
-  const input = document.getElementById('cat_'+id);
-  const dd = document.getElementById('dd_'+id);
+function acFilter(fieldId, listKey) {
+  const input = document.getElementById(fieldId);
+  const dd = document.getElementById('dd_'+fieldId);
   if (!input || !dd) return;
   const q = normalize(input.value);
-  const list = id === 'Cat12' ? REFEREES : PLAYERS;
+  const list = listKey === 'ref' ? REFEREES : PLAYERS;
   const matches = q.length < 2 ? [] : list.filter(p => normalize(p).includes(q)).slice(0, 8);
   if (!matches.length) {
     dd.innerHTML = q.length >= 2 ? `<div class="ac-empty">Sin resultados</div>` : '';
@@ -1157,21 +1160,28 @@ function acFilter(id) {
     return;
   }
   dd.innerHTML = matches.map(p =>
-    `<div class="ac-item" onmousedown="acSelect('${id}','${p.replace(/'/g,"\\'")}')">
+    `<div class="ac-item" onmousedown="acSelect('${fieldId}','${p.replace(/'/g,"\\'")}')">
       ${p.replace(new RegExp('('+q.split('').join('|')+')', 'gi'), '<strong>$1</strong>')}
     </div>`
   ).join('');
   dd.classList.add('open');
 }
 
-function acSelect(id, val) {
-  const input = document.getElementById('cat_'+id);
-  if (input) input.value = val;
-  acClose(id);
+function acSelect(fieldId, val) {
+  const input = document.getElementById(fieldId);
+  if (input) {
+    input.value = val;
+    // If admin field, auto-save
+    if (fieldId.startsWith('cr_')) {
+      const catId = fieldId.replace('cr_','');
+      saveCatResult(catId);
+    }
+  }
+  acClose(fieldId);
 }
 
-function acClose(id) {
-  const dd = document.getElementById('dd_'+id);
+function acClose(fieldId) {
+  const dd = document.getElementById('dd_'+fieldId);
   if (dd) dd.classList.remove('open');
 }
 
@@ -1189,10 +1199,10 @@ function catInput(c, val, locked) {
     return `<input class="cat-input" type="number" min="0" max="99" step="1" id="cat_${c.id}" value="${val||''}" placeholder="0" style="width:80px;text-align:center"/>`;
   }
   if (c.inputType === 'player') {
-    return acWidget(c.id, val, PLAYERS, 'Escribí un apellido...');
+    return acWidget('cat_'+c.id, val, PLAYERS, 'Escribí un apellido...', false);
   }
   if (c.inputType === 'referee') {
-    return acWidget(c.id, val, REFEREES, 'Escribí un apellido...');
+    return acWidget('cat_'+c.id, val, REFEREES, 'Escribí un apellido...', false);
   }
   return `<input class="cat-input" type="text" id="cat_${c.id}" value="${val||''}" placeholder="Tu apuesta..." style="width:200px"/>`;
 }
@@ -1402,7 +1412,10 @@ function adminCatInput(c) {
     return `<input class="cat-input" type="number" min="0" max="99" step="1" id="cr_${c.id}" value="${val}" placeholder="0" style="width:80px;text-align:center" onchange="saveCatResult('${c.id}')"/>`;
   }
   if (c.inputType === 'player') {
-    return `<input class="cat-input" type="text" id="cr_${c.id}" value="${val}" placeholder="Nombre Apellido (País)" style="width:220px" onchange="saveCatResult('${c.id}')"/>`;
+    return acWidget('cr_'+c.id, val, PLAYERS, 'Escribí un apellido...', true);
+  }
+  if (c.inputType === 'referee') {
+    return acWidget('cr_'+c.id, val, REFEREES, 'Escribí un apellido...', true);
   }
   return `<input class="cat-input" type="text" id="cr_${c.id}" value="${val}" placeholder="Resultado real..." style="width:200px" onchange="saveCatResult('${c.id}')"/>`;
 }
