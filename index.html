@@ -205,7 +205,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
 <div id="screen-login" class="screen active">
   <div class="login-wrap">
     <div class="login-card">
-      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Lomba" autocomplete="off"/></div>
+      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Carlos" autocomplete="off"/></div>
       <div class="field"><label>PIN</label><input type="password" id="login-pin" placeholder="4 dígitos" maxlength="4"/></div>
       <button class="btn primary" style="width:100%;justify-content:center;height:42px" onclick="doLogin()">Entrar</button>
       <div class="error-msg" id="login-error" style="display:none">Usuario o PIN incorrecto</div>
@@ -934,7 +934,7 @@ const CATEGORIES = [
   {id:'Cat1', name:'Campeón', trophy:null, type:'a', pts:9, inputType:'team',
    rule:'El equipo que gane la Copa del Mundo 2026.'},
   {id:'Cat1b', name:'Subcampeón', trophy:'Trofeo Gérard Zervette de la Palme', type:'a', pts:9, inputType:'team',
-   rule:'El equipo que llegue a la final y pierda — el que termine en segundo lugar del campeonato.'},
+   rule:'El equipo que llegue a la final y pierda y termine en segundo lugar del campeonato.'},
   {id:'Cat2', name:'Goleador', trophy:'Trofeo Erling Haaland', type:'b', pts:12, inputType:'player',
    rule:'El jugador que más goles convierta. En caso de empate, se considera al que haya jugado menos minutos.'},
   {id:'Cat3', name:'Balón de Oro', trophy:null, type:'b', pts:12, inputType:'player',
