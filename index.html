@@ -976,7 +976,12 @@ function loading(msg){document.getElementById('loading-msg').textContent=msg||'C
 function doneLoading(){document.getElementById('loading').classList.add('hidden')}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
 function showSaveHint(){const h=document.getElementById('save-hint');h.style.display='inline';setTimeout(()=>h.style.display='none',2500)}
-function isMundialStarted(){return mundialStart?new Date()>=new Date(mundialStart+'T00:00:00'):false}
+function isMundialStarted(){
+  if(!mundialStart) return false;
+  // Strip any time component — take only the date part (YYYY-MM-DD)
+  const datePart = mundialStart.toString().split('T')[0].substring(0,10);
+  return new Date() >= new Date(datePart + 'T00:00:00');
+}
 function isLocked(match){
   if(match.tbd) return false;
   const d=new Date(match.date+'T00:00:00');d.setDate(d.getDate()-1);d.setHours(23,59,59);
