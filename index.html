@@ -193,7 +193,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
 <div id="screen-login" class="screen active">
   <div class="login-wrap">
     <div class="login-card">
-      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Carlos" autocomplete="off"/></div>
+      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Lomba" autocomplete="off"/></div>
       <div class="field"><label>PIN</label><input type="password" id="login-pin" placeholder="4 dígitos" maxlength="4"/></div>
       <button class="btn primary" style="width:100%;justify-content:center;height:42px" onclick="doLogin()">Entrar</button>
       <div class="error-msg" id="login-error" style="display:none">Usuario o PIN incorrecto</div>
@@ -1262,16 +1262,34 @@ function renderEspia(){
   const el=document.getElementById('espia-content');if(!el)return;
   const ms=isMundialStarted();
   let html='';
+
   const locked=MATCHES.filter(m=>!m.tbd&&isLocked(m));
-  if(!locked.length){html='<div style="font-size:14px;color:#3a4a6a;padding:1.5rem 0;text-align:center">Todavía no hay partidos bloqueados.</div>';}
-  else{
-    html+='<div style="font-size:10px;font-weight:600;color:#5a6a8a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Partidos cerrados</div>';
-    locked.forEach(m=>{
-      html+=`<div class="spy-match-card"><div class="spy-match-header">${m.home} vs ${m.away}</div><div class="spy-match-date">${m.date} · cerrado</div>`;
-      html+=USERS.map(u=>{const bet=allBets[u]&&allBets[u].matches&&allBets[u].matches[m.id];return`<div class="spy-row"><div class="spy-name"><span class="avatar" style="width:22px;height:22px;font-size:9px;margin-right:6px">${u.slice(0,2)}</span>${u}</div>${bet?`<div class="spy-bet">${bet.h} – ${bet.a}</div>`:`<div class="spy-bet spy-pending">no apostó</div>`}</div>`;}).join('');
-      html+='</div>';
-    });
+
+  if(!locked.length){
+    html='<div style="font-size:14px;color:#3a4a6a;padding:1.5rem 0;text-align:center">Todavía no hay partidos bloqueados.</div>';
+  } else {
+    // Split: today & yesterday vs older
+    const todayStr = new Date().toISOString().split('T')[0];
+    const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate()-1);
+    const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+
+    const recent = locked.filter(m => m.date >= yesterdayStr);
+    const older  = locked.filter(m => m.date < yesterdayStr);
+
+    function matchCard(m) {
+      let card = `<div class="spy-match-card"><div class="spy-match-header">${m.home} vs ${m.away}</div><div class="spy-match-date">${m.date} · cerrado</div>`;
+      card += USERS.map(u=>{const bet=allBets[u]&&allBets[u].matches&&allBets[u].matches[m.id];return`<div class="spy-row"><div class="spy-name"><span class="avatar" style="width:22px;height:22px;font-size:9px;margin-right:6px">${u.slice(0,2)}</span>${u}</div>${bet?`<div class="spy-bet">${bet.h} – ${bet.a}</div>`:`<div class="spy-bet spy-pending">no apostó</div>`}</div>`;}).join('');
+      card += '</div>';
+      return card;
+    }
+
+    if(recent.length){
+      html+='<div style="font-size:10px;font-weight:600;color:#5a6a8a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Hoy y ayer</div>';
+      recent.forEach(m=>{ html+=matchCard(m); });
+    }
   }
+
+  // Categorías y Wild Card
   if(ms){
     html+='<div style="font-size:10px;font-weight:600;color:#5a6a8a;text-transform:uppercase;letter-spacing:.06em;margin:1.5rem 0 10px">Categorías extra · bloqueadas</div>';
     CATEGORIES.forEach(c=>{
@@ -1284,6 +1302,22 @@ function renderEspia(){
   } else {
     html+='<div style="margin-top:1.5rem;padding:12px 16px;background:#131929;border-radius:10px;font-size:13px;color:#5a6a8a;border:0.5px solid rgba(255,255,255,0.07)">Las categorías y Wild Card se revelan cuando empieza el mundial.</div>';
   }
+
+  // Partidos anteriores al final
+  const locked2=MATCHES.filter(m=>!m.tbd&&isLocked(m));
+  const yesterdayDate2 = new Date(); yesterdayDate2.setDate(yesterdayDate2.getDate()-1);
+  const yesterdayStr2 = yesterdayDate2.toISOString().split('T')[0];
+  const older = locked2.filter(m => m.date < yesterdayStr2);
+  if(older.length){
+    html+='<div style="font-size:10px;font-weight:600;color:#3a4a6a;text-transform:uppercase;letter-spacing:.06em;margin:1.5rem 0 10px">Partidos anteriores</div>';
+    older.forEach(m=>{
+      let card=`<div class="spy-match-card" style="opacity:.6"><div class="spy-match-header">${m.home} vs ${m.away}</div><div class="spy-match-date">${m.date} · cerrado</div>`;
+      card+=USERS.map(u=>{const bet=allBets[u]&&allBets[u].matches&&allBets[u].matches[m.id];return`<div class="spy-row"><div class="spy-name"><span class="avatar" style="width:22px;height:22px;font-size:9px;margin-right:6px">${u.slice(0,2)}</span>${u}</div>${bet?`<div class="spy-bet">${bet.h} – ${bet.a}</div>`:`<div class="spy-bet spy-pending">no apostó</div>`}</div>`;}).join('');
+      card+='</div>';
+      html+=card;
+    });
+  }
+
   el.innerHTML=html;
 }
 
@@ -1365,7 +1399,62 @@ function calcScores(){
 function renderTabla(){
   const sc=calcScores(),sorted=Object.keys(sc).sort((a,b)=>sc[b]-sc[a]);
   const el=document.getElementById('tabla-content');if(!el)return;
-  el.innerHTML=`<div class="card-title">Posiciones · sin Wild Card</div><table class="tbl"><thead><tr><th style="width:24px">#</th><th>Jugador</th><th style="text-align:right">Puntos</th></tr></thead><tbody>${sorted.map((u,i)=>`<tr><td class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${i+1}</td><td><span class="avatar">${u.slice(0,2)}</span>${u}</td><td style="text-align:right;font-weight:700;color:#fff">${sc[u]}</td></tr>`).join('')}</tbody></table>`;
+  el.innerHTML=`
+    <div class="card-title">Posiciones · sin Wild Card</div>
+    <table class="tbl" id="tabla-snapshot"><thead><tr><th style="width:24px">#</th><th>Jugador</th><th style="text-align:right">Puntos</th></tr></thead>
+    <tbody>${sorted.map((u,i)=>`<tr><td class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${i+1}</td><td><span class="avatar">${u.slice(0,2)}</span>${u}</td><td style="text-align:right;font-weight:700;color:#fff">${sc[u]}</td></tr>`).join('')}</tbody>
+    </table>
+    <div style="margin-top:12px">
+      <button class="btn primary" onclick="compartirTabla()" style="font-size:13px;gap:8px">
+        <span>📤</span> Compartir tabla
+      </button>
+      <span id="share-hint" style="font-size:12px;color:#5a6a8a;margin-left:10px;display:none"></span>
+    </div>`;
+}
+
+async function compartirTabla(){
+  const hint = document.getElementById('share-hint');
+  // Load html2canvas if not loaded
+  if(!window.html2canvas){
+    hint.style.display='inline';hint.textContent='Preparando...';
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload=res;s.onerror=rej;
+      document.head.appendChild(s);
+    });
+  }
+  hint.style.display='inline';hint.textContent='Capturando...';
+  try{
+    // Capture just the table area
+    const target=document.getElementById('tabla-snapshot');
+    const canvas=await html2canvas(target,{
+      backgroundColor:'#131929',
+      scale:2,
+      logging:false
+    });
+    canvas.toBlob(async(blob)=>{
+      if(!blob){hint.textContent='Error al capturar';return;}
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[new File([blob],'tabla.png',{type:'image/png'})]})){
+        await navigator.share({
+          files:[new File([blob],'tabla_prode.png',{type:'image/png'})],
+          title:'Tabla Prode 2026',
+          text:'Copa Carlos Alberto Solari · Tabla de posiciones 🏆'
+        });
+        hint.textContent='';hint.style.display='none';
+      } else {
+        // Fallback: download image
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');a.href=url;a.download='tabla_prode.png';a.click();
+        URL.revokeObjectURL(url);
+        hint.textContent='Imagen descargada';
+        setTimeout(()=>{hint.style.display='none';},3000);
+      }
+    },'image/png');
+  }catch(e){
+    hint.textContent='No disponible en este dispositivo';
+    setTimeout(()=>{hint.style.display='none';},3000);
+  }
 }
 
 // ADMIN
