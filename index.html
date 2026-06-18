@@ -81,6 +81,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
 .cat-input{width:150px;height:32px;font-size:13px;border:0.5px solid rgba(255,255,255,0.12);border-radius:8px;padding:0 10px;background:#0d1525;color:#e8e8e0;font-family:inherit;flex-shrink:0}
 .cat-input:disabled{opacity:.4}
 .cat-select{appearance:auto}
+.pts-indicator{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:24px;padding:0 8px;border-radius:7px;font-size:12px;font-weight:700;margin-left:8px;flex-shrink:0}
+.pts-pending{background:rgba(255,255,255,0.05);color:#3a4a6a}
+.pts-zero{background:rgba(255,255,255,0.05);color:#5a6a8a}
+.pts-positive{background:rgba(58,158,95,0.15);color:#3a9e5f}
 /* Autocomplete */
 .ac-wrap{position:relative;flex-shrink:0}
 .ac-input{width:230px;height:32px;font-size:13px;border:0.5px solid rgba(255,255,255,0.12);border-radius:8px;padding:0 10px;background:#0d1525;color:#e8e8e0;font-family:inherit}
@@ -193,7 +197,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
 <div id="screen-login" class="screen active">
   <div class="login-wrap">
     <div class="login-card">
-      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Carlos" autocomplete="off"/></div>
+      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Lomba" autocomplete="off"/></div>
       <div class="field"><label>PIN</label><input type="password" id="login-pin" placeholder="4 dígitos" maxlength="4"/></div>
       <button class="btn primary" style="width:100%;justify-content:center;height:42px" onclick="doLogin()">Entrar</button>
       <div class="error-msg" id="login-error" style="display:none">Usuario o PIN incorrecto</div>
@@ -949,7 +953,7 @@ const CATEGORIES = [
    rule:'El primer equipo que patee un penal cobrado exclusivamente por llamado del VAR al árbitro. No vale si el árbitro ya lo había señalado antes de la revisión.'},
   {id:'Cat14', name:'Peor equipo ex campeón del mundo', trophy:null, type:'a', pts:9, inputType:'team',
    rule:'De los ex campeones clasificados (Argentina, Brasil, Francia, Alemania, España, Inglaterra, Uruguay), el que resulte peor rankeado en la tabla definitiva de la FIFA.'},
-  {id:'Cat15', name:'Primera referencia falopa de Alfaro', trophy:'Trofeo Utopías Imposibles', type:'a', pts:9, inputType:'text',
+  {id:'Cat15', name:'Primera referencia falopa de Alfaro', trophy:'Trofeo Utopías Imposibles', type:'a', pts:0, inputType:'text',
    rule:'Apellido de la primera personalidad de la ciencia, filosofía, política o cultura que Gustavo Alfaro cite en conferencia de prensa o entrevista dentro del estadio, desde el inicio del mundial.'},
   {id:'Cat16', name:'Primer gol bosnio', trophy:'Trofeo Kolasinac a favor', type:'a', pts:9, inputType:'player',
    rule:'El primer jugador de Bosnia en convertir un gol a favor del equipo.'},
@@ -1082,10 +1086,26 @@ function renderGroups(){
       } else {
         const locked=isLocked(m),bet=(userBets.matches&&userBets.matches[m.id])||{};
         const h=bet.h!==undefined?bet.h:'',a=bet.a!==undefined?bet.a:'';
+        let ptsBadge='';
+        if(locked){
+          const res=results[m.id];
+          if(!res){
+            ptsBadge=`<span class="pts-indicator pts-pending">–</span>`;
+          } else if(bet.h===undefined||bet.h===''){
+            ptsBadge=`<span class="pts-indicator pts-zero">0</span>`;
+          } else {
+            const rh=res.h,ra=res.a;
+            const rW=rh>ra?'H':rh<ra?'A':'E',bW=bet.h>bet.a?'H':bet.h<bet.a?'A':'E';
+            let earned=0;
+            if(rW===bW)earned+=m.pts.base;
+            if(rh===bet.h&&ra===bet.a)earned+=m.pts.exact;
+            ptsBadge=`<span class="pts-indicator ${earned>0?'pts-positive':'pts-zero'}">${earned>0?'+'+earned:'0'}</span>`;
+          }
+        }
         html+=`<div class="match-row">
           <div class="teams">${m.home} <span style="color:#3a4a6a">vs</span> ${m.away}<div class="match-date">${m.date}</div></div>
           ${locked
-            ?`<span class="locked-badge">Cerrado</span><span style="font-size:16px;font-weight:700;padding:0 8px;color:#fff">${h!==''?h:'?'} – ${a!==''?a:'?'}</span>`
+            ?`<span class="locked-badge">Cerrado</span><span style="font-size:16px;font-weight:700;padding:0 8px;color:#fff">${h!==''?h:'?'} – ${a!==''?a:'?'}</span>${ptsBadge}`
             :`<div style="display:flex;align-items:center;gap:6px"><input class="score-input" type="number" min="0" max="20" step="1" value="${h}" id="h_${m.id}" placeholder="—"/><span class="score-sep">–</span><input class="score-input" type="number" min="0" max="20" step="1" value="${a}" id="a_${m.id}" placeholder="—"/></div><span class="open-badge">Abierto</span>`}
         </div>`;
       }
@@ -1218,7 +1238,20 @@ function renderCats(){
   document.getElementById('cats-lock-banner').style.display=locked?'':'none';
   document.getElementById('cats-save-row').style.display=locked?'none':'';
   const uc=userBets.cats||{};
-  el.innerHTML=CATEGORIES.map(c=>`
+  el.innerHTML=CATEGORIES.map(c=>{
+    let ptsBadge='';
+    if(locked){
+      const result=catResults[c.id];
+      if(!result){
+        ptsBadge=`<span class="pts-indicator pts-pending">–</span>`;
+      } else if(!uc[c.id]){
+        ptsBadge=`<span class="pts-indicator pts-zero">0</span>`;
+      } else {
+        const hit=catsMatch(uc[c.id], result, c);
+        ptsBadge=`<span class="pts-indicator ${hit?'pts-positive':'pts-zero'}">${hit?'+'+c.pts:'0'}</span>`;
+      }
+    }
+    return `
     <div class="cat-row">
       <div class="cat-label">
         <div class="cat-name">${c.name}</div>
@@ -1227,7 +1260,9 @@ function renderCats(){
       </div>
       <span class="cat-pts ${c.type}">${c.pts} pts</span>
       ${catInput(c, uc[c.id]||'', locked)}
-    </div>`).join('');
+      ${ptsBadge}
+    </div>`;
+  }).join('');
 }
 
 async function saveCats(){
@@ -1405,15 +1440,17 @@ function renderTabla(){
     <tbody>${sorted.map((u,i)=>`<tr><td class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${i+1}</td><td><span class="avatar">${u.slice(0,2)}</span>${u}</td><td style="text-align:right;font-weight:700;color:#fff">${sc[u]}</td></tr>`).join('')}</tbody>
     </table>
     <div style="margin-top:12px">
-      <button class="btn primary" onclick="compartirTabla()" style="font-size:13px;gap:8px">
+      <button class="btn primary" onclick="compartirTabla('tabla-snapshot','share-hint')" style="font-size:13px;gap:8px">
         <span>📤</span> Compartir tabla
       </button>
       <span id="share-hint" style="font-size:12px;color:#5a6a8a;margin-left:10px;display:none"></span>
     </div>`;
 }
 
-async function compartirTabla(){
-  const hint = document.getElementById('share-hint');
+async function compartirTabla(targetId, hintId){
+  targetId = targetId || 'tabla-snapshot';
+  hintId = hintId || (targetId==='admin-tabla-snapshot' ? 'share-hint-admin' : 'share-hint');
+  const hint = document.getElementById(hintId);
   // Load html2canvas if not loaded
   if(!window.html2canvas){
     hint.style.display='inline';hint.textContent='Preparando...';
@@ -1427,7 +1464,7 @@ async function compartirTabla(){
   hint.style.display='inline';hint.textContent='Capturando...';
   try{
     // Capture just the table area
-    const target=document.getElementById('tabla-snapshot');
+    const target=document.getElementById(targetId);
     const canvas=await html2canvas(target,{
       backgroundColor:'#131929',
       scale:2,
@@ -1535,7 +1572,13 @@ function renderAdminTabla(sc){
   if(!sc)sc=calcScores();
   const sorted=Object.keys(sc).sort((a,b)=>sc[b]-sc[a]);
   const el=document.getElementById('admin-tabla');if(!el)return;
-  el.innerHTML=`<div class="card-title">Tabla · sin Wild Card</div><table class="tbl"><thead><tr><th style="width:24px">#</th><th>Jugador</th><th style="text-align:right">Puntos</th></tr></thead><tbody>${sorted.map((u,i)=>`<tr><td class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${i+1}</td><td><span class="avatar">${u.slice(0,2)}</span>${u}</td><td style="text-align:right;font-weight:700;color:#fff">${sc[u]}</td></tr>`).join('')}</tbody></table>`;
+  el.innerHTML=`<div class="card-title">Tabla · sin Wild Card</div><table class="tbl" id="admin-tabla-snapshot"><thead><tr><th style="width:24px">#</th><th>Jugador</th><th style="text-align:right">Puntos</th></tr></thead><tbody>${sorted.map((u,i)=>`<tr><td class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${i+1}</td><td><span class="avatar">${u.slice(0,2)}</span>${u}</td><td style="text-align:right;font-weight:700;color:#fff">${sc[u]}</td></tr>`).join('')}</tbody></table>
+    <div style="margin-top:12px">
+      <button class="btn primary" onclick="compartirTabla('admin-tabla-snapshot')" style="font-size:13px;gap:8px">
+        <span>📤</span> Compartir tabla
+      </button>
+      <span id="share-hint-admin" style="font-size:12px;color:#5a6a8a;margin-left:10px;display:none"></span>
+    </div>`;
 }
 
 function renderWCAdmin(sc){
