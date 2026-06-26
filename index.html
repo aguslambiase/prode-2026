@@ -1527,6 +1527,8 @@ function renderDetalle(){
   html+=`</tbody></table></div>`;
   el.innerHTML=html;
 }
+
+function renderTabla(){
   const sc=calcScores(),sorted=Object.keys(sc).sort((a,b)=>sc[b]-sc[a]);
   const el=document.getElementById('tabla-content');if(!el)return;
   el.innerHTML=`
