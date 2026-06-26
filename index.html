@@ -197,7 +197,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
 <div id="screen-login" class="screen active">
   <div class="login-wrap">
     <div class="login-card">
-      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Carlos" autocomplete="off"/></div>
+      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Lomba" autocomplete="off"/></div>
       <div class="field"><label>PIN</label><input type="password" id="login-pin" placeholder="4 dígitos" maxlength="4"/></div>
       <button class="btn primary" style="width:100%;justify-content:center;height:42px" onclick="doLogin()">Entrar</button>
       <div class="error-msg" id="login-error" style="display:none">Usuario o PIN incorrecto</div>
@@ -234,6 +234,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
     <button class="tab" onclick="switchTab('wildcard')">Wild Card</button>
     <button class="tab" onclick="switchTab('espia')">Ver apuestas</button>
     <button class="tab" onclick="switchTab('tabla')">Tabla</button>
+    <button class="tab" onclick="switchTab('detalle')">Detalle</button>
   </div>
 
   <div id="tab-grupos">
@@ -271,6 +272,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
     <div class="section-header">Tabla de posiciones</div>
     <div class="section-sub">Puntajes sin Wild Card aplicada.</div>
     <div class="card" id="tabla-content"></div>
+  </div>
+
+  <div id="tab-detalle" style="display:none">
+    <div class="section-header">Detalle de puntos</div>
+    <div class="section-sub">Puntos por fase y categorías extra.</div>
+    <div class="card" id="detalle-content"></div>
   </div>
 </div>
 
@@ -425,21 +432,21 @@ const MATCHES = [
   {id:'GrL5',group:'L',home:'Panama',away:'Inglaterra',date:'2026-06-27',pts:{base:3,exact:2}},
   {id:'GrL6',group:'L',home:'Croacia',away:'Ghana',date:'2026-06-27',pts:{base:3,exact:2}},
   // DIECISEISAVOS (FD)
-  {id:'FD1',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-06-28',pts:{base:5,exact:3},tbd:true},
-  {id:'FD2',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-06-29',pts:{base:5,exact:3},tbd:true},
-  {id:'FD3',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-06-29',pts:{base:5,exact:3},tbd:true},
-  {id:'FD4',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-06-29',pts:{base:5,exact:3},tbd:true},
-  {id:'FD5',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-06-30',pts:{base:5,exact:3},tbd:true},
-  {id:'FD6',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-06-30',pts:{base:5,exact:3},tbd:true},
-  {id:'FD7',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-06-30',pts:{base:5,exact:3},tbd:true},
+  {id:'FD1',phase:'FD',home:'Alemania',away:'Por definir',date:'2026-06-29',pts:{base:5,exact:3},tbd:true},
+  {id:'FD2',phase:'FD',home:'Francia',away:'Por definir',date:'2026-06-30',pts:{base:5,exact:3},tbd:true},
+  {id:'FD3',phase:'FD',home:'Sudáfrica',away:'Canada',date:'2026-06-28',pts:{base:5,exact:3}},
+  {id:'FD4',phase:'FD',home:'Paises Bajos',away:'Marruecos',date:'2026-06-29',pts:{base:5,exact:3}},
+  {id:'FD5',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-02',pts:{base:5,exact:3},tbd:true},
+  {id:'FD6',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-02',pts:{base:5,exact:3},tbd:true},
+  {id:'FD7',phase:'FD',home:'Estados Unidos',away:'Bosnia',date:'2026-07-01',pts:{base:5,exact:3}},
   {id:'FD8',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-01',pts:{base:5,exact:3},tbd:true},
-  {id:'FD9',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-01',pts:{base:5,exact:3},tbd:true},
-  {id:'FD10',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-01',pts:{base:5,exact:3},tbd:true},
-  {id:'FD11',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-02',pts:{base:5,exact:3},tbd:true},
-  {id:'FD12',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-02',pts:{base:5,exact:3},tbd:true},
-  {id:'FD13',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-03',pts:{base:5,exact:3},tbd:true},
-  {id:'FD14',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-03',pts:{base:5,exact:3},tbd:true},
-  {id:'FD15',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-03',pts:{base:5,exact:3},tbd:true},
+  {id:'FD9',phase:'FD',home:'Brasil',away:'Japon',date:'2026-06-29',pts:{base:5,exact:3}},
+  {id:'FD10',phase:'FD',home:'Costa de Marfil',away:'Noruega',date:'2026-06-30',pts:{base:5,exact:3}},
+  {id:'FD11',phase:'FD',home:'Mexico',away:'Por definir',date:'2026-06-30',pts:{base:5,exact:3},tbd:true},
+  {id:'FD12',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-01',pts:{base:5,exact:3},tbd:true},
+  {id:'FD13',phase:'FD',home:'Argentina',away:'Por definir',date:'2026-07-03',pts:{base:5,exact:3},tbd:true},
+  {id:'FD14',phase:'FD',home:'Australia',away:'Por definir',date:'2026-07-03',pts:{base:5,exact:3},tbd:true},
+  {id:'FD15',phase:'FD',home:'Suiza',away:'Por definir',date:'2026-07-03',pts:{base:5,exact:3},tbd:true},
   {id:'FD16',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-03',pts:{base:5,exact:3},tbd:true},
   // OCTAVOS (FO)
   {id:'FO1',phase:'FO',home:'Por definir',away:'Por definir',date:'2026-07-04',pts:{base:5,exact:3},tbd:true},
@@ -1023,7 +1030,12 @@ async function loadPlayerData(){
     const[bR,rR]=await Promise.all([api({action:'getBets',user:currentUser}),api({action:'getResults'})]);
     if(bR.ok){userBets.matches=bR.bets||{};userBets.cats=bR.cats||{};userBets.wc=bR.wc||''}
     if(rR.ok){results=rR.results||{};catResults=rR.catResults||{};mundialStart=rR.mundialStart||null}
-    await loadAllBets();
+    // allBets se carga en segundo plano — no bloquea el login
+    loadAllBets().then(()=>{
+      // Si el usuario ya está en la pestaña espía o tabla, refrescar
+      if(currentTab==='espia')renderEspia();
+      if(currentTab==='tabla')renderTabla();
+    });
   }finally{doneLoading()}
 }
 async function loadAllBets(){
@@ -1049,11 +1061,30 @@ async function loadAdminData(){
 }
 
 // TABS
+let currentTab='grupos';
 function switchTab(t){
-  const tabs=['grupos','categorias','wildcard','espia','tabla'];
+  currentTab=t;
+  const tabs=['grupos','categorias','wildcard','espia','tabla','detalle'];
   document.querySelectorAll('#screen-player .tabs .tab').forEach((b,i)=>b.classList.toggle('active',tabs[i]===t));
   tabs.forEach(tab=>{const el=document.getElementById('tab-'+tab);if(el)el.style.display=tab===t?'':'none'});
-  if(t==='tabla')renderTabla();if(t==='espia')renderEspia();if(t==='categorias')renderCats();if(t==='wildcard')renderWCPlayer();if(t==='grupos')renderGroups();
+  if(t==='tabla')renderTabla();
+  if(t==='categorias')renderCats();
+  if(t==='wildcard')renderWCPlayer();
+  if(t==='grupos')renderGroups();
+  if(t==='detalle'){
+    if(!Object.keys(allBets).length){
+      loading('Cargando apuestas...');
+      loadAllBets().then(()=>{doneLoading();renderDetalle();}).catch(()=>{doneLoading();renderDetalle();});
+    } else { renderDetalle(); }
+  }
+  if(t==='espia'){
+    if(!Object.keys(allBets).length){
+      loading('Cargando apuestas...');
+      loadAllBets().then(()=>{doneLoading();renderEspia();}).catch(()=>{doneLoading();renderEspia();});
+    } else {
+      renderEspia();
+    }
+  }
 }
 function switchAdminTab(t){
   const tabs=['resultados','categorias','wildcard','config','tabla'];
@@ -1431,7 +1462,71 @@ function calcScores(){
   return sc;
 }
 
-function renderTabla(){
+function calcPhasePoints(user){
+  const ub=allBets[user]||{};
+  const phases={A:0,B:0,C:0,D:0,E:0,F:0,G:0,H:0,I:0,J:0,K:0,L:0,FD:0,FO:0,FC:0,FS:0,FF:0,cats:0};
+  MATCHES.filter(m=>!m.tbd).forEach(m=>{
+    if(!results[m.id])return;
+    const bet=ub.matches&&ub.matches[m.id];if(!bet)return;
+    const rh=results[m.id].h,ra=results[m.id].a;
+    const rW=rh>ra?'H':rh<ra?'A':'E',bW=bet.h>bet.a?'H':bet.h<bet.a?'A':'E';
+    let p=0;if(rW===bW)p+=m.pts.base;if(rh===bet.h&&ra===bet.a)p+=m.pts.exact;
+    const key=m.group||m.phase;
+    if(phases[key]!==undefined)phases[key]+=p;
+  });
+  const uc=ub.cats||{};
+  CATEGORIES.forEach(c=>{
+    if(catResults[c.id]&&uc[c.id]&&catsMatch(uc[c.id],catResults[c.id],c))phases.cats+=c.pts;
+  });
+  // Agrupa fases en columnas
+  const grupos=['A','B','C','D','E','F','G','H','I','J','K','L'].reduce((s,k)=>s+(phases[k]||0),0);
+  return {
+    grupos,
+    dieciseis: phases.FD||0,
+    octavos:   phases.FO||0,
+    cuartos:   phases.FC||0,
+    semis:     phases.FS||0,
+    final:     phases.FF||0,
+    cats:      phases.cats,
+    total:     grupos+(phases.FD||0)+(phases.FO||0)+(phases.FC||0)+(phases.FS||0)+(phases.FF||0)+phases.cats
+  };
+}
+
+function renderDetalle(){
+  const el=document.getElementById('detalle-content');if(!el)return;
+  const cols=[
+    {key:'grupos',    label:'Grupos'},
+    {key:'dieciseis', label:'16vos'},
+    {key:'octavos',   label:'8vos'},
+    {key:'cuartos',   label:'Cuartos'},
+    {key:'semis',     label:'Semis'},
+    {key:'final',     label:'Final'},
+    {key:'cats',      label:'Cats extra'},
+    {key:'total',     label:'Total'},
+  ];
+  const data=USERS.map(u=>({u,p:calcPhasePoints(u)})).sort((a,b)=>b.p.total-a.p.total);
+  const thStyle='padding:6px 8px;font-size:10px;color:#5a6a8a;font-weight:600;text-transform:uppercase;letter-spacing:.04em;text-align:right;white-space:nowrap';
+  const thFirst='padding:6px 8px;font-size:10px;color:#5a6a8a;font-weight:600;text-transform:uppercase;letter-spacing:.04em;text-align:left';
+  const tdStyle='padding:6px 8px;font-size:13px;text-align:right;color:#cdd6f4';
+  const tdTotal='padding:6px 8px;font-size:13px;text-align:right;font-weight:700;color:#fff';
+  let html=`<div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="${thFirst}">Jugador</th>
+        ${cols.map(c=>`<th style="${thStyle}${c.key==='total'?';color:#d4aa20':''}">${c.label}</th>`).join('')}
+      </tr></thead>
+      <tbody>`;
+  data.forEach(({u,p},i)=>{
+    const isMe=u===currentUser;
+    const rowStyle=isMe?'background:rgba(212,170,32,0.07)':'';
+    html+=`<tr style="${rowStyle}${i%2===0?';background-color:rgba(255,255,255,0.02)':''}">
+      <td style="padding:6px 8px;font-size:13px"><span class="avatar" style="width:22px;height:22px;font-size:9px;margin-right:6px">${u.slice(0,2)}</span>${u}${isMe?' ★':''}</td>
+      ${cols.map(c=>`<td style="${c.key==='total'?tdTotal:tdStyle}">${p[c.key]||0}</td>`).join('')}
+    </tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  el.innerHTML=html;
+}
   const sc=calcScores(),sorted=Object.keys(sc).sort((a,b)=>sc[b]-sc[a]);
   const el=document.getElementById('tabla-content');if(!el)return;
   el.innerHTML=`
