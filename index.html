@@ -197,7 +197,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#0a0f1e;color:#e8
 <div id="screen-login" class="screen active">
   <div class="login-wrap">
     <div class="login-card">
-      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Carlos" autocomplete="off"/></div>
+      <div class="field"><label>Tu nombre</label><input type="text" id="login-name" placeholder="Ej: Lomba" autocomplete="off"/></div>
       <div class="field"><label>PIN</label><input type="password" id="login-pin" placeholder="4 dígitos" maxlength="4"/></div>
       <button class="btn primary" style="width:100%;justify-content:center;height:42px" onclick="doLogin()">Entrar</button>
       <div class="error-msg" id="login-error" style="display:none">Usuario o PIN incorrecto</div>
@@ -432,12 +432,12 @@ const MATCHES = [
   {id:'GrL5',group:'L',home:'Panama',away:'Inglaterra',date:'2026-06-27',pts:{base:3,exact:2}},
   {id:'GrL6',group:'L',home:'Croacia',away:'Ghana',date:'2026-06-27',pts:{base:3,exact:2}},
   // DIECISEISAVOS (FD)
-  {id:'FD1',phase:'FD',home:'Alemania',away:'Paraguay',date:'2026-06-29',pts:{base:5,exact:3},
+  {id:'FD1',phase:'FD',home:'Alemania',away:'Por definir',date:'2026-06-29',pts:{base:5,exact:3},tbd:true},
   {id:'FD2',phase:'FD',home:'Francia',away:'Por definir',date:'2026-06-30',pts:{base:5,exact:3},tbd:true},
   {id:'FD3',phase:'FD',home:'Sudáfrica',away:'Canada',date:'2026-06-28',pts:{base:5,exact:3}},
   {id:'FD4',phase:'FD',home:'Paises Bajos',away:'Marruecos',date:'2026-06-29',pts:{base:5,exact:3}},
   {id:'FD5',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-02',pts:{base:5,exact:3},tbd:true},
-  {id:'FD6',phase:'FD',home:'España',away:'Por definir',date:'2026-07-02',pts:{base:5,exact:3},tbd:true},
+  {id:'FD6',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-02',pts:{base:5,exact:3},tbd:true},
   {id:'FD7',phase:'FD',home:'Estados Unidos',away:'Bosnia',date:'2026-07-01',pts:{base:5,exact:3}},
   {id:'FD8',phase:'FD',home:'Por definir',away:'Por definir',date:'2026-07-01',pts:{base:5,exact:3},tbd:true},
   {id:'FD9',phase:'FD',home:'Brasil',away:'Japon',date:'2026-06-29',pts:{base:5,exact:3}},
@@ -976,7 +976,7 @@ function api(payload){
     const script=document.createElement('script');
     script.src=API_URL+'?data='+encodeURIComponent(JSON.stringify(payload))+'&callback='+cb;
     script.onerror=()=>{cleanup();reject(new Error('Error de red'))};
-    const timer=setTimeout(()=>{cleanup();reject(new Error('Timeout'))},20000);
+    const timer=setTimeout(()=>{cleanup();reject(new Error('Timeout'))},8000);
     window[cb]=(data)=>{cleanup();resolve(data)};
     function cleanup(){clearTimeout(timer);delete window[cb];if(script.parentNode)script.parentNode.removeChild(script)}
     document.head.appendChild(script);
@@ -1007,9 +1007,9 @@ async function doLogin(){
   loading('Verificando...');
   try{
     const r=await api({action:'login',name,pin});
-    if(r.ok){currentUser=r.name;await loadPlayerData();document.getElementById('player-name-display').textContent=currentUser;show('screen-player');switchTab('grupos')}
-    else{document.getElementById('login-error').style.display='block'}
-  }finally{doneLoading()}
+    if(r.ok){currentUser=r.name;loadPlayerData();}
+    else{doneLoading();document.getElementById('login-error').style.display='block'}
+  }catch(e){doneLoading();document.getElementById('login-error').style.display='block'}
 }
 function showAdminLogin(){document.getElementById('admin-pin-input').value='';document.getElementById('admin-login-error').style.display='none';show('screen-admin-login')}
 async function doAdminLogin(){
@@ -1030,13 +1030,21 @@ async function loadPlayerData(){
     const[bR,rR]=await Promise.all([api({action:'getBets',user:currentUser}),api({action:'getResults'})]);
     if(bR.ok){userBets.matches=bR.bets||{};userBets.cats=bR.cats||{};userBets.wc=bR.wc||''}
     if(rR.ok){results=rR.results||{};catResults=rR.catResults||{};mundialStart=rR.mundialStart||null}
-    // allBets se carga en segundo plano — no bloquea el login
+    // allBets en segundo plano — nunca bloquea el login
     loadAllBets().then(()=>{
-      // Si el usuario ya está en la pestaña espía o tabla, refrescar
       if(currentTab==='espia')renderEspia();
       if(currentTab==='tabla')renderTabla();
-    });
-  }finally{doneLoading()}
+      if(currentTab==='detalle')renderDetalle();
+    }).catch(()=>{});
+    doneLoading();
+    document.getElementById('player-name-display').textContent=currentUser;
+    show('screen-player');
+    switchTab('grupos');
+  }catch(e){
+    doneLoading();
+    alert('Error al conectar. Intentá de nuevo en unos segundos.');
+    show('screen-login');
+  }
 }
 async function loadAllBets(){
   const r = await api({action:'getAllBets'});
@@ -1052,11 +1060,15 @@ async function loadAdminData(){
   try{
     const[rR]=await Promise.all([api({action:'getResults'})]);
     if(rR.ok){results=rR.results||{};catResults=rR.catResults||{};mundialStart=rR.mundialStart||null}
-    await loadAllBets();
     renderAdminResults();renderAdminCats();recalc();
     const inp=document.getElementById('mundial-start-input');if(inp&&mundialStart)inp.value=mundialStart;
     document.getElementById('stat-mundial').textContent=isMundialStarted()?'Iniciado':'Pendiente';
     document.getElementById('stat-results').textContent=Object.keys(results).length;
+    // allBets en segundo plano
+    loadAllBets().then(()=>recalc()).catch(()=>{});
+  }catch(e){
+    doneLoading();
+    alert('Error al conectar. Intentá de nuevo.');
   }finally{doneLoading()}
 }
 
