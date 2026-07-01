@@ -449,11 +449,11 @@ const MATCHES = [
   {id:'FD15',phase:'FD',home:'Suiza',away:'Argelia',date:'2026-07-03',pts:{base:5,exact:3}},
   {id:'FD16',phase:'FD',home:'Colombia',away:'Ghana',date:'2026-07-03',pts:{base:5,exact:3}},
   // OCTAVOS (FO)
-  {id:'FO1',phase:'FO',home:'Por definir',away:'Por definir',date:'2026-07-04',pts:{base:5,exact:3},tbd:true},
-  {id:'FO2',phase:'FO',home:'Por definir',away:'Por definir',date:'2026-07-04',pts:{base:5,exact:3},tbd:true},
+  {id:'FO1',phase:'FO',home:'Paraguay',away:'Francia',date:'2026-07-04',pts:{base:5,exact:3}},
+  {id:'FO2',phase:'FO',home:'Canada',away:'Marruecos',date:'2026-07-04',pts:{base:5,exact:3}},
   {id:'FO3',phase:'FO',home:'Por definir',away:'Por definir',date:'2026-07-05',pts:{base:5,exact:3},tbd:true},
   {id:'FO4',phase:'FO',home:'Por definir',away:'Por definir',date:'2026-07-05',pts:{base:5,exact:3},tbd:true},
-  {id:'FO5',phase:'FO',home:'Por definir',away:'Por definir',date:'2026-07-06',pts:{base:5,exact:3},tbd:true},
+  {id:'FO5',phase:'FO',home:'Brasil',away:'Noruega',date:'2026-07-05',pts:{base:5,exact:3}},
   {id:'FO6',phase:'FO',home:'Por definir',away:'Por definir',date:'2026-07-06',pts:{base:5,exact:3},tbd:true},
   {id:'FO7',phase:'FO',home:'Por definir',away:'Por definir',date:'2026-07-07',pts:{base:5,exact:3},tbd:true},
   {id:'FO8',phase:'FO',home:'Por definir',away:'Por definir',date:'2026-07-07',pts:{base:5,exact:3},tbd:true},
@@ -1114,7 +1114,7 @@ function renderGroups(){
     if(!groups[key])groups[key]=[];
     groups[key].push(m);
   });
-  const order=['FD','FO','FC','FS','FF','A','B','C','D','E','F','G','H','I','J','K','L'];
+  const order=['FO','FC','FS','FF','FD','A','B','C','D','E','F','G','H','I','J','K','L'];
   let html='';
   order.forEach(key=>{
     if(!groups[key])return;
@@ -1606,7 +1606,7 @@ async function compartirTabla(targetId, hintId){
 // ADMIN
 function renderAdminResults(){
   const container=document.getElementById('admin-results-container');if(!container)return;
-  const order=['FD','FO','FC','FS','FF','A','B','C','D','E','F','G','H','I','J','K','L'];
+  const order=['FO','FC','FS','FF','FD','A','B','C','D','E','F','G','H','I','J','K','L'];
   const groups={};
   MATCHES.filter(m=>!m.tbd).forEach(m=>{const key=m.group||m.phase;if(!groups[key])groups[key]=[];groups[key].push(m)});
   let html='';
