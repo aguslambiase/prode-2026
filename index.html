@@ -1116,7 +1116,7 @@ function renderGroups(){
     if(!groups[key])groups[key]=[];
     groups[key].push(m);
   });
-  const order=['FO','FC','FS','FF','FD','A','B','C','D','E','F','G','H','I','J','K','L'];
+  const order=['FC','FS','FF','FO','FD','A','B','C','D','E','F','G','H','I','J','K','L'];
   let html='';
   order.forEach(key=>{
     if(!groups[key])return;
@@ -1608,7 +1608,7 @@ async function compartirTabla(targetId, hintId){
 // ADMIN
 function renderAdminResults(){
   const container=document.getElementById('admin-results-container');if(!container)return;
-  const order=['FO','FC','FS','FF','FD','A','B','C','D','E','F','G','H','I','J','K','L'];
+  const order=['FC','FS','FF','FO','FD','A','B','C','D','E','F','G','H','I','J','K','L'];
   const groups={};
   MATCHES.filter(m=>!m.tbd).forEach(m=>{const key=m.group||m.phase;if(!groups[key])groups[key]=[];groups[key].push(m)});
   let html='';
