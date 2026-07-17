@@ -468,7 +468,8 @@ const MATCHES = [
   {id:'FS1',phase:'FS',home:'Francia',away:'España',date:'2026-07-14',pts:{base:7,exact:4}},
   {id:'FS2',phase:'FS',home:'Inglaterra',away:'Argentina',date:'2026-07-15',pts:{base:7,exact:4}},
   // FINAL
-  {id:'FF1',phase:'FF',home:'Por definir',away:'Por definir',date:'2026-07-19',pts:{base:7,exact:4},tbd:true},
+  {id:'FF1',phase:'FF',home:'Francia',away:'Inglaterra',date:'2026-07-18',pts:{base:7,exact:4}},
+  {id:'FF2',phase:'FF',home:'España',away:'Argentina',date:'2026-07-19',pts:{base:7,exact:4}},
 ];
 
 const PHASE_LABELS = {
@@ -1116,7 +1117,7 @@ function renderGroups(){
     if(!groups[key])groups[key]=[];
     groups[key].push(m);
   });
-  const order=['FS','FF','FC','FO','FD','A','B','C','D','E','F','G','H','I','J','K','L'];
+  const order=['FF','FS','FC','FO','FD','A','B','C','D','E','F','G','H','I','J','K','L'];
   let html='';
   order.forEach(key=>{
     if(!groups[key])return;
@@ -1608,7 +1609,7 @@ async function compartirTabla(targetId, hintId){
 // ADMIN
 function renderAdminResults(){
   const container=document.getElementById('admin-results-container');if(!container)return;
-  const order=['FS','FF','FC','FO','FD','A','B','C','D','E','F','G','H','I','J','K','L'];
+  const order=['FF','FS','FC','FO','FD','A','B','C','D','E','F','G','H','I','J','K','L'];
   const groups={};
   MATCHES.filter(m=>!m.tbd).forEach(m=>{const key=m.group||m.phase;if(!groups[key])groups[key]=[];groups[key].push(m)});
   let html='';
